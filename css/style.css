@@ -1,0 +1,128 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* ===== Header ===== */
+header {
+  background-color: #004080;
+  color: white;
+  padding: 15px 0;
+  text-align: center;
+}
+
+/* ===== Thanh menu ===== */
+nav {
+  background-color: #0066cc;
+  padding: 10px 0;
+  text-align: center;
+}
+
+nav a {
+  color: white;
+  margin: 0 15px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Banner ===== */
+.banner {
+  background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e') no-repeat center/cover;
+  color: white;
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.banner h1 {
+  font-size: 40px;
+  text-shadow: 2px 2px 5px #000;
+}
+
+/* ===== Form tìm kiếm ===== */
+.search-box {
+  margin-top: 20px;
+}
+
+.search-box input,
+.search-box select,
+.search-box button {
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  margin: 5px;
+  font-size: 16px;
+}
+
+.search-box button {
+  background-color: orange;
+  color: white;
+  cursor: pointer;
+}
+
+/* ===== Danh sách tour ===== */
+.container {
+  width: 90%;
+  margin: 30px auto;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #004080;
+}
+
+.tour-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.tour-card {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  width: 300px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: 0.3s;
+  background: white;
+}
+
+.tour-card:hover {
+  transform: scale(1.03);
+}
+
+.tour-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.tour-card .info {
+  padding: 15px;
+}
+
+.tour-card h3 {
+  color: #004080;
+  margin-bottom: 10px;
+}
+
+.tour-card p {
+  color: #333;
+  margin-bottom: 5px;
+}
+
+/* ===== Footer ===== */
+footer {
+  background-color: #004080;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  margin-top: 30px;
+}
