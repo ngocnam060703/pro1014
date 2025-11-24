@@ -13,7 +13,7 @@
         <form action="index.php?act=guide-store" method="post">
             <div class="mb-3">
                 <label for="name" class="form-label">Tên</label>
-                <input type="text" class="form-control" id="name" name="name" required>
+                <input type="text" class="form-control" id="fullname" name="fullname" required>
             </div>
 
             <div class="mb-3">
@@ -27,11 +27,8 @@
             </div>
 
             <div class="mb-3">
-                <label for="status" class="form-label">Trạng thái</label>
-                <select class="form-select" id="status" name="status">
-                    <option value="active" selected>Đang làm</option>
-                    <option value="inactive">Tạm nghỉ</option>
-                </select>
+                <label for="certificate" class="form-label">Trạng thái</label>
+                <input type="text" class="form-control" id="certificate" name="certificate">
             </div>
 
             <button type="submit" class="btn btn-success">

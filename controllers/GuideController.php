@@ -26,7 +26,7 @@ class GuideController {
 
     public function store() {
         $data = [
-            "name" => $_POST["name"],
+            "fullname" => $_POST["fullname"],
             "phone" => $_POST["phone"],
             "email" => $_POST["email"],
             "status" => $_POST["status"]
@@ -51,10 +51,10 @@ class GuideController {
     public function update() {
         $id = $_POST["id"];
         $data = [
-            "name" => $_POST["name"],
+            "fullname" => $_POST["fullname"],
             "phone" => $_POST["phone"],
             "email" => $_POST["email"],
-            "status" => $_POST["status"]
+            "status" => $_POST["certificate"]
         ];
 
         $this->guide->updateData($id, $data);
