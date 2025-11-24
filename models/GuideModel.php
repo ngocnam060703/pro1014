@@ -13,15 +13,15 @@ class GuideModel {
     }
 
     public function store($data) {
-        $sql = "INSERT INTO guides (name, phone, email, status) VALUES (?, ?, ?, ?)";
-        return pdo_execute($sql, $data['name'], $data['phone'], $data['email'], $data['status']);
+        $sql = "INSERT INTO guides (fullname, phone, email, certificate) VALUES (?, ?, ?, ?)";
+        return pdo_execute($sql, $data['fullname'], $data['phone'], $data['email'], $data['certificate']);
     }
 
     public function updateData($id, $data) {
         $sql = "UPDATE guides 
                 SET name = ?, phone = ?, email = ?, status = ?
                 WHERE id = ?";
-        return pdo_execute($sql, $data['name'], $data['phone'], $data['email'], $data['status'], $id);
+        return pdo_execute($sql, $data['fullname'], $data['phone'], $data['email'], $data['certificate'], $id);
     }
 
     public function delete($id) {
