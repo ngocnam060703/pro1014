@@ -23,11 +23,30 @@ if (session_status() == PHP_SESSION_NONE) {
 </head>
 <body>
 <div class="row g-0">
+
+  <!-- SIDEBAR -->
   <div class="col-2 sidebar">
-      <h4 class="text-center text-light mb-4">ADMIN</h4>
-      <a href="index.php?act=tour"><i class="bi bi-card-list"></i> Quản lý Tour</a>
-      <a href="index.php"><i class="bi bi-house"></i> Trang chủ</a>
-      <a href="#"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a>
+    <h4 class="text-center text-light mb-4">ADMIN</h4>
+
+    <a href="index.php?act=dashboard">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+
+    <a href="index.php?act=account">
+      <i class="bi bi-people"></i> Quản lý tài khoản
+    </a>
+
+    <a href="index.php?act=guide">
+      <i class="bi bi-person-badge"></i> Quản lý nhân viên
+    </a>
+
+    <a href="index.php?act=tour">
+      <i class="bi bi-card-list"></i> Quản lý Tour
+    </a>
+
+    <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')">
+      <i class="bi bi-box-arrow-right"></i> Đăng xuất
+    </a>
   </div>
 
   <div class="col-10 content">
