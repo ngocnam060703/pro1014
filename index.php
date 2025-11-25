@@ -1,6 +1,15 @@
 <?php
 session_start();
 
+$user = $_SESSION['user'] ?? null;
+
+if ($user) {
+    $_SESSION["user"] = [
+        "id" => $user["id"],
+        "username" => $user["username"],
+        "role" => $user["role"]
+    ];
+}
 // =====================
 // LOAD CONTROLLERS
 // =====================
@@ -9,6 +18,7 @@ require_once "controllers/AdminController.php";
 require_once "controllers/GuideController.php";
 require_once "controllers/GuideAssignController.php";
 require_once "controllers/GuideJournalController.php";
+require_once "controllers/GuideClientController.php";
 
 // Instance controllers
 $tourController = new TourController();
@@ -16,12 +26,63 @@ $adminController = new AdminController();
 $guideController = new GuideController();
 $guideAssignController = new GuideAssignController();
 $guideJournalController = new GuideJournalController();
+$guideClientController = new GuideClientController();
+
+$act = $_GET["act"] ?? "";
+
+
+// =====================
+// ROLE & PERMISSION
+// =====================
+$role = $_SESSION["user"]["role"] ?? null;
+
+// Các action của ADMIN
+$adminActions = [
+    "dashboard", "account", "account-create", "account-store", "account-edit",
+    "account-update", "account-delete",
+    "tour", "tour-create", "tour-store", "tour-edit", "tour-update", "tour-delete",
+    "lich", "lich-create", "lich-store", "lich-edit", "lich-update", "lich-delete",
+    "guide", "guide-create", "guide-store", "guide-edit", "guide-update", "guide-delete", "guide-detail",
+    "guide-assign", "guide-assign-create", "guide-assign-store", "guide-assign-edit",
+    "guide-assign-update", "guide-assign-delete",
+    "guide-journal", "guide-journal-create", "guide-journal-store",
+    "guide-journal-edit", "guide-journal-update", "guide-journal-delete",
+];
+
+// Các action của HƯỚNG DẪN VIÊN
+$guideActions = [
+    "hdv_dashboard",
+    "hdv_schedule",
+    "hdv_journal",
+    "hdv_incident"
+];
+
+// =====================
+// CHECK PERMISSION
+// =====================
+if ($role === "admin") {
+    // HDV không được vào trang admin
+    if (in_array($act, $guideActions)) {
+        header("Location: index.php?act=dashboard");
+        exit;
+    }
+}
+
+if ($role === "user") {
+    // Admin không được vào trang HDV
+    if (in_array($act, $adminActions)) {
+        header("Location: index.php?act=hdv_dashboard");
+        exit;
+    }
+}
+
 
 
 // =====================
 // GET ACTION
 // =====================
-$act = $_GET["act"] ?? "";
+
+
 
 
 // =====================
@@ -232,6 +293,32 @@ case "account-delete":
     case "guide-journal-delete":
         $guideJournalController->delete();
         break;
+
+    //Client HDV
+
+    case 'hdv_dashboard':
+    $guideClientController->dashboard();
+    break;
+
+    case 'hdv_schedule':
+        $guideClientController->schedule();
+        break;
+
+    case 'hdv_journal':
+        $guideClientController->journal();
+        break;
+
+    case 'hdv_incident':
+        $guideClientController->incident();
+        break;
+
+    case "hdv_logout":
+    session_unset();
+    session_destroy();
+    header("Location: index.php?act=loginForm"); // hoặc login form HDV riêng nếu có
+    exit;
+
+
 
 
     // =====================
