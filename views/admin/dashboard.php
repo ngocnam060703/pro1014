@@ -46,6 +46,10 @@
   <i class="bi bi-card-list"></i> Phân công HDV
 </a>
 
+<a href="index.php?act=report">
+    <i class="bi bi-bar-chart-line"></i> Báo cáo
+  </a>
+
   </a>
 </li>
 

@@ -2,17 +2,20 @@
 require_once "models/UserModel.php";
 require_once "models/OrderModel.php";
 require_once "models/TourModel.php";
+require_once "models/ReportModel.php"; // thêm ReportModel
 
 class AdminController {
 
     private $userModel;
     private $orderModel;
     private $tourModel;
+    private $reportModel; // thêm biến report
 
     public function __construct() {
         $this->userModel = new UserModel();
         $this->orderModel = new OrderModel();
         $this->tourModel = new TourModel();
+        $this->reportModel = new ReportModel(); // khởi tạo report
 
         // Kiểm tra quyền truy cập vào admin (ngoại trừ login)
         $currentAction = $_GET['act'] ?? '';
@@ -77,19 +80,15 @@ class AdminController {
     // -----------------------------
     // ACCOUNT MANAGEMENT (CRUD)
     // -----------------------------
-
-    // Danh sách tài khoản
     public function accountList() {
         $users = $this->userModel->getAllUsers();
         include "views/admin/account_list.php";
     }
 
-    // Form thêm tài khoản
     public function accountCreate() {
         include "views/admin/account_add.php";
     }
 
-    // Lưu tài khoản mới
     public function accountStore() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = [
@@ -108,14 +107,12 @@ class AdminController {
         }
     }
 
-    // Form sửa tài khoản
     public function accountEdit() {
         $id = $_GET['id'] ?? 0;
         $user = $this->userModel->getUserById($id);
         include "views/admin/account_edit.php";
     }
 
-    // Cập nhật tài khoản
     public function accountUpdate() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'];
@@ -138,11 +135,18 @@ class AdminController {
         }
     }
 
-    // Xóa tài khoản
     public function accountDelete() {
         $id = $_GET['id'] ?? 0;
         $this->userModel->deleteUser($id);
         header("Location: index.php?act=account");
         exit;
+    }
+
+    // -----------------------------
+    // REPORT MANAGEMENT
+    // -----------------------------
+    public function report() {
+        $data = $this->reportModel->getAllOrdersReport(); // lấy báo cáo
+        include "views/admin/report_list.php";
     }
 }

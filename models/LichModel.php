@@ -19,6 +19,11 @@ class LichModel {
         return pdo_query($sql, $tour_id);
     }
 
+    // Alias để tương thích với code cũ
+    public function getLichByTour($tour_id) {
+        return $this->getDeparturesByTour($tour_id);
+    }
+
     public function insertDeparture($data) {
         $sql = "INSERT INTO departures(tour_id, departure_time, meeting_point, seats_available, notes)
                 VALUES (?, ?, ?, ?, ?)";

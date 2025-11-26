@@ -9,6 +9,7 @@ require_once "controllers/AdminController.php";
 require_once "controllers/GuideController.php";
 require_once "controllers/GuideAssignController.php";
 require_once "controllers/GuideJournalController.php";
+require_once "controllers/ReportController.php";
 
 // Instance controllers
 $tourController = new TourController();
@@ -39,6 +40,10 @@ switch ($act) {
     case "logout":
         $adminController->logout();
         exit;
+    case 'report':
+        $controller = new ReportController();
+        $controller->index();
+        break;
 }
 
 
