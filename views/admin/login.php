@@ -35,6 +35,11 @@
 
                         <button class="btn btn-primary w-100" type="submit">Đăng nhập</button>
                     </form>
+                    <div class="mt-3">
+                        <a href="index.php?act=hdv_login" class="btn btn-outline-success w-100">
+                            Đăng nhập Hướng dẫn viên
+                        </a>
+                    </div>
                 </div>
             </div>
 

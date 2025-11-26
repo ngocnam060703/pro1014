@@ -28,4 +28,10 @@ class GuideModel {
         $sql = "DELETE FROM guides WHERE id = ?";
         return pdo_execute($sql, $id);
     }
+
+    public function login($username, $password) {
+    $sql = "SELECT * FROM guides WHERE account_id = ? AND password = ?";
+    return pdo_query_one($sql, $username, $password);
+}
+
 }

@@ -10,18 +10,26 @@ class AdminController {
     private $tourModel;
 
     public function __construct() {
+
         $this->userModel = new UserModel();
         $this->orderModel = new OrderModel();
         $this->tourModel = new TourModel();
 
         // Kiểm tra quyền truy cập vào admin (ngoại trừ login)
         $currentAction = $_GET['act'] ?? '';
+        $publicActions = ['login', 'loginForm'];
 
-        if (!isset($_SESSION['user']) && !in_array($currentAction, ['login', 'loginForm'])) {
+        if (!isset($_SESSION['user']) && !in_array($currentAction, $publicActions)) {
             header("Location: index.php?act=loginForm");
             exit;
         }
+
+        // if (isset($_SESSION['user']) && $_SESSION['user']['role'] !== 'admin' && !in_array($currentAction, $publicActions)) {
+        //     echo "<h3 style='color:red;text-align:center;margin-top:30px'>❌ Bạn không có quyền truy cập trang ADMIN</h3>";
+        //     exit;
+        // }
     }
+
 
     // -----------------------------
     // LOGIN / LOGOUT
@@ -43,15 +51,19 @@ class AdminController {
                 return;
             }
 
-            if ($user['role'] !== "admin") {
+            if ($user['role'] === "admin") {
+                $_SESSION['user'] = $user;
+                header("Location: index.php?act=dashboard");
+                exit;
+            } elseif ($user['role'] === "user") {
+                $_SESSION['user'] = $user;
+                header("Location: index.php?act=hdv_dashboard");
+                exit;
+            } else {
                 $error = "Bạn không có quyền truy cập!";
                 include "views/admin/login.php";
                 return;
             }
-
-            $_SESSION['user'] = $user;
-            header("Location: index.php?act=dashboard");
-            exit;
         }
     }
 
