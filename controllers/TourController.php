@@ -1,5 +1,6 @@
 <?php
 require_once "models/TourModel.php";
+require_once "models/LichModel.php";
 
 class TourController {
 
@@ -11,7 +12,7 @@ class TourController {
         $this->lichModel = new LichModel();
     }
 
-    // Danh sách tour
+    // Tour
     public function index() {
         $listTour = $this->tourModel->getAllTours();
         include "views/admin/tour_list.php";
@@ -49,6 +50,7 @@ class TourController {
     public function delete() {
         $id = $_GET["id"] ?? null;
         if ($id) $this->tourModel->deleteTour($id);
+        $_SESSION['message'] = "Tour đã được xóa thành công!";
         header("Location: index.php?act=tour");
         exit();
     }
