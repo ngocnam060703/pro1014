@@ -17,7 +17,6 @@ class TourModel {
     public function insertTour($data) {
         $sql = "INSERT INTO tours(title, description, itinerary, price, slots, departure, status)
                 VALUES (?, ?, ?, ?, ?, ?, ?)";
-
         return pdo_execute(
             $sql,
             $data["title"],
@@ -47,64 +46,6 @@ class TourModel {
 
     public function deleteTour($id) {
         $sql = "DELETE FROM tours WHERE id = ?";
-        return pdo_execute($sql, $id);
-    }
-}
-class LichModel {
-
-    // Bảng chuẩn hóa: departures
-    // Các trường: id, tour_id, departure_date, departure_time, meeting_point, slots, note
-
-    // Lấy lịch theo tour (Giữ nguyên)
-    public function getLichByTour($tour_id) {
-        $sql = "SELECT * FROM departures WHERE tour_id = ?";
-        return pdo_query($sql, $tour_id);
-    }
-
-    // Lấy 1 lịch
-    public function getLichById($id) {
-        // SỬA: lich_khoi_hanh -> departures
-        $sql = "SELECT * FROM departures WHERE id = ?"; 
-        return pdo_query_one($sql, $id);
-    }
-
-    // Thêm lịch
-    public function insertLich($data) {
-        // SỬA: lich_khoi_hanh -> departures
-        $sql = "INSERT INTO departures(tour_id, departure_time, meeting_point, seats_available ,notes)
-                VALUES (?, ?, ?, ?, ?)";
-
-        return pdo_execute(
-            $sql,
-            $data["tour_id"],
-            $data["departure_time"],
-            $data["meeting_point"],
-            $data["seats_available"],
-            $data["notes"]
-        );
-    }
-
-    // Sửa lịch
-    public function updateLich($id, $data) {
-        // SỬA: tên bảng và chuẩn hóa các trường dữ liệu
-        $sql = "UPDATE departures 
-                SET  departure_time=?, meeting_point=?, seats_available=?, notes=? 
-                WHERE id=?";
-
-        return pdo_execute($sql,
-            
-            $data["departure_time"],
-            $data["meeting_point"],
-            $data["seats_available"],
-            $data["notes"],
-            $id
-        );
-    }
-
-    // Xoá lịch
-    public function deleteLich($id) {
-        // SỬA: lich_khoi_hanh -> departures
-        $sql = "DELETE FROM departures WHERE id=?";
         return pdo_execute($sql, $id);
     }
 }
