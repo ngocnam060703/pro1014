@@ -1,14 +1,14 @@
 <?php
+require_once __DIR__ . "/../commons/function.php";
 
 class GuideAssignModel {
 
     public function all() {
-        $sql = "SELECT ga.*, g.name AS guide_name, d.title AS departure_name
+        $sql = "SELECT ga.*, g.fullname AS guide_name, t.title AS tour_title
                 FROM guide_assign ga
-                JOIN guides g ON ga.guide_id = g.id
-                JOIN departures d ON ga.departure_id = d.id
+                LEFT JOIN guides g ON ga.guide_id = g.id
+                LEFT JOIN tours t ON ga.tour_id = t.id
                 ORDER BY ga.id DESC";
-
         return pdo_query($sql);
     }
 
@@ -18,23 +18,39 @@ class GuideAssignModel {
     }
 
     public function store($data) {
-        $sql = "INSERT INTO guide_assign (departure_id, guide_id, note)
-                VALUES (?, ?, ?)";
+        $sql = "INSERT INTO guide_assign 
+                (guide_id, tour_id, departure_date, meeting_point, max_people, note, status, assigned_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         return pdo_execute($sql,
-            $data['departure_id'],
             $data['guide_id'],
-            $data['note']
+            $data['tour_id'],
+            $data['departure_date'],
+            $data['meeting_point'],
+            $data['max_people'],
+            $data['note'],
+            $data['status'],
+            $data['assigned_at']
         );
     }
 
     public function updateData($id, $data) {
-        $sql = "UPDATE guide_assign 
-                SET departure_id = ?, guide_id = ?, note = ?
+        $sql = "UPDATE guide_assign SET 
+                    guide_id = ?, 
+                    tour_id = ?, 
+                    departure_date = ?, 
+                    meeting_point = ?, 
+                    max_people = ?, 
+                    note = ?, 
+                    status = ?
                 WHERE id = ?";
         return pdo_execute($sql,
-            $data['departure_id'],
             $data['guide_id'],
+            $data['tour_id'],
+            $data['departure_date'],
+            $data['meeting_point'],
+            $data['max_people'],
             $data['note'],
+            $data['status'],
             $id
         );
     }
