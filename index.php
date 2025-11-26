@@ -10,16 +10,20 @@ require_once "controllers/GuideController.php";
 require_once "controllers/GuideAssignController.php";
 require_once "controllers/GuideJournalController.php";
 require_once "controllers/ScheduleController.php";
+require_once "controllers/ServiceController.php";
 
 
-// Instance controllers
-$tourController = new TourController();
-$adminController = new AdminController();
-$guideController = new GuideController();
-$guideAssignController = new GuideAssignController();
-$guideJournalController = new GuideJournalController();
-// Instance controller
-$scheduleController = new ScheduleController();
+// =====================
+// MAKE CONTROLLER INSTANCE
+// =====================
+$adminController         = new AdminController();
+$tourController          = new TourController();
+$guideController         = new GuideController();
+$guideAssignController   = new GuideAssignController();
+$guideJournalController  = new GuideJournalController();
+$scheduleController      = new ScheduleController();
+$serviceController       = new ServiceController();
+
 
 
 // =====================
@@ -28,10 +32,12 @@ $scheduleController = new ScheduleController();
 $act = $_GET["act"] ?? "";
 
 
+
 // =====================
 // ROUTE: LOGIN / LOGOUT
 // =====================
 switch ($act) {
+
     case "login":
         $adminController->login();
         exit;
@@ -58,7 +64,7 @@ if (!isset($_SESSION["user"]) && !in_array($act, $publicActions)) {
 
 
 // =====================
-// ROUTES SYSTEM
+// MAIN ROUTER
 // =====================
 switch ($act) {
 
@@ -68,32 +74,36 @@ switch ($act) {
     case "dashboard":
         $adminController->dashboard();
         break;
+
+
     // =====================
-// ACCOUNT MANAGEMENT
-// =====================
-case "account":
-    $adminController->accountList();
-    break;
+    // ACCOUNT MANAGEMENT
+    // =====================
+    case "account":
+        $adminController->accountList();
+        break;
 
-case "account-create":
-    $adminController->accountCreate();
-    break;
+    case "account-create":
+        $adminController->accountCreate();
+        break;
 
-case "account-store":
-    $adminController->accountStore();
-    break;
+    case "account-store":
+        $adminController->accountStore();
+        break;
 
-case "account-edit":
-    $adminController->accountEdit();
-    break;
+    case "account-edit":
+        $adminController->accountEdit();
+        break;
 
-case "account-update":
-    $adminController->accountUpdate();
-    break;
+    case "account-update":
+        $adminController->accountUpdate();
+        break;
 
-case "account-delete":
-    $adminController->accountDelete();
-    break;
+    case "account-delete":
+        $adminController->accountDelete();
+        break;
+
+
     // =====================
     // TOUR
     // =====================
@@ -123,32 +133,59 @@ case "account-delete":
 
 
     // =====================
-    // LỊCH TOUR
+    // SCHEDULE
     // =====================
     case "schedule":
-    $scheduleController->scheduleList();
-    break;
+        $scheduleController->scheduleList();
+        break;
 
-case "schedule-create":
-    $scheduleController->scheduleCreate();
-    break;
+    case "schedule-create":
+        $scheduleController->scheduleCreate();
+        break;
 
-case "schedule-store":
-    $scheduleController->scheduleStore();
-    break;
+    case "schedule-store":
+        $scheduleController->scheduleStore();
+        break;
 
-case "schedule-edit":
-    $scheduleController->scheduleEdit();
-    break;
+    case "schedule-edit":
+        $scheduleController->scheduleEdit();
+        break;
 
-case "schedule-update":
-    $scheduleController->scheduleUpdate();
-    break;
+    case "schedule-update":
+        $scheduleController->scheduleUpdate();
+        break;
 
-case "schedule-delete":
-    $scheduleController->scheduleDelete();
-    break;
+    case "schedule-delete":
+        $scheduleController->scheduleDelete();
+        break;
 
+
+    // =====================
+    // SERVICE (Fixed + Clean)
+    // =====================
+    case "service":
+        $serviceController->list();
+        break;
+
+    case "service-create":
+        $serviceController->create();
+        break;
+
+    case "service-store":
+        $serviceController->store();
+        break;
+
+    case "service-edit":
+        $serviceController->edit();
+        break;
+
+    case "service-update":
+        $serviceController->update();
+        break;
+
+    case "service-delete":
+        $serviceController->delete();
+        break;
 
 
     // =====================

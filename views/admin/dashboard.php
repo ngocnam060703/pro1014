@@ -37,6 +37,9 @@
     <a href="index.php?act=schedule">
       <i class="bi bi-calendar-event"></i> Quản lý lịch trình 
     </a>
+    <a href="index.php?act=service">
+      <i class="bi bi-calendar-event"></i> Quản lý dịch vụ
+    </a>
 
     <a href="index.php?act=tour">
       <i class="bi bi-card-list"></i> Quản lý Tour
@@ -103,6 +106,12 @@
           <i class="bi bi-calendar-event"></i> Quản lý lịch trình 
         </a>
       </div>
+       <div class="col-md-3">
+        <a href="index.php?act=service" class="btn btn-outline-info w-100 p-3">
+          <i class="bi bi-calendar-event"></i> Quản lý lịch trình 
+        </a>
+      </div>
+      
 
       <div class="col-md-3">
         <a href="index.php?act=tour" class="btn btn-outline-success w-100 p-3">

@@ -37,6 +37,8 @@ body { background: #f5f6fa; }
     <a href="index.php?act=schedule">
       <i class="bi bi-person-badge"></i> Quản lý lịch trình
     </a>
+    <a href="index.php?act=service">
+        <i class="bi bi-calendar-event"></i> Quản lý dịch vụ
 
     <a href="index.php?act=tour">
       <i class="bi bi-card-list"></i> Quản lý Tour
