@@ -9,6 +9,8 @@ require_once "controllers/AdminController.php";
 require_once "controllers/GuideController.php";
 require_once "controllers/GuideAssignController.php";
 require_once "controllers/GuideJournalController.php";
+require_once "controllers/ScheduleController.php";
+
 
 // Instance controllers
 $tourController = new TourController();
@@ -16,6 +18,8 @@ $adminController = new AdminController();
 $guideController = new GuideController();
 $guideAssignController = new GuideAssignController();
 $guideJournalController = new GuideJournalController();
+// Instance controller
+$scheduleController = new ScheduleController();
 
 
 // =====================
@@ -121,29 +125,30 @@ case "account-delete":
     // =====================
     // LỊCH TOUR
     // =====================
-    case "lich":
-        $tourController->lichList();
-        break;
+    case "schedule":
+    $scheduleController->scheduleList();
+    break;
 
-    case "lich-create":
-        $tourController->lichCreate();
-        break;
+case "schedule-create":
+    $scheduleController->scheduleCreate();
+    break;
 
-    case "lich-store":
-        $tourController->lichStore();
-        break;
+case "schedule-store":
+    $scheduleController->scheduleStore();
+    break;
 
-    case "lich-edit":
-        $tourController->lichEdit();
-        break;
+case "schedule-edit":
+    $scheduleController->scheduleEdit();
+    break;
 
-    case "lich-update":
-        $tourController->lichUpdate();
-        break;
+case "schedule-update":
+    $scheduleController->scheduleUpdate();
+    break;
 
-    case "lich-delete":
-        $tourController->lichDelete();
-        break;
+case "schedule-delete":
+    $scheduleController->scheduleDelete();
+    break;
+
 
 
     // =====================
