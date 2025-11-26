@@ -1,7 +1,7 @@
 <?php
 require_once "models/ReportModel.php";
 
-if (session_status() == PHP_SESSION_NONE) session_start();
+if(session_status() == PHP_SESSION_NONE) session_start();
 
 class ReportController {
 
@@ -11,6 +11,7 @@ class ReportController {
         $this->report = new ReportModel();
     }
 
+    // Trang báo cáo đơn hàng
     public function index() {
         $reports = $this->report->getAllOrdersReport();
         $totalRevenue = $this->report->getTotalRevenue();

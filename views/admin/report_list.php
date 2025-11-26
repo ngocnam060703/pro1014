@@ -14,15 +14,12 @@
         .card h5 { font-weight: bold; }
         .table thead { background-color: #004080; color: #fff; }
         .table-striped > tbody > tr:nth-of-type(odd) { background-color: #e9f1ff; }
-
-        /* Màu trạng thái */
         .status-Pending { color: #ffc107; font-weight: bold; }
         .status-Confirmed { color: #28a745; font-weight: bold; }
         .status-Cancelled { color: #dc3545; font-weight: bold; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <h3>Báo cáo đơn hàng</h3>
 
@@ -34,7 +31,6 @@
                 <h3><?= $totalOrders ?></h3>
             </div>
         </div>
-
         <div class="col-md-3 mb-3">
             <div class="card p-3 text-center bg-success text-white">
                 <h5>Tổng doanh thu</h5>
@@ -59,8 +55,8 @@
             </tr>
         </thead>
         <tbody>
-            <?php if (!empty($reports)): ?>
-                <?php foreach ($reports as $report): ?>
+            <?php if(!empty($reports)): ?>
+                <?php foreach($reports as $report): ?>
                     <tr>
                         <td><?= $report['id'] ?></td>
                         <td><?= htmlspecialchars($report['customer_name']) ?></td>
@@ -69,13 +65,7 @@
                         <td><?= htmlspecialchars($report['tour_title']) ?></td>
                         <td><?= $report['num_people'] ?></td>
                         <td><?= $report['booking_date'] ?></td>
-
-                        <?php 
-                            // Đảm bảo giá trị status không bị lỗi class
-                            $statusClass = htmlspecialchars($report['status']);
-                        ?>
-                        <td class="status-<?= $statusClass ?>"><?= $report['status'] ?></td>
-
+                        <td class="status-<?= $report['status'] ?>"><?= $report['status'] ?></td>
                         <td><?= number_format($report['total_price']) ?> đ</td>
                     </tr>
                 <?php endforeach; ?>
@@ -86,8 +76,6 @@
             <?php endif; ?>
         </tbody>
     </table>
-
 </div>
-
 </body>
 </html>
