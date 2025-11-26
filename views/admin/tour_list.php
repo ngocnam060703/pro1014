@@ -39,6 +39,12 @@ if (session_status() == PHP_SESSION_NONE) {
     <a href="index.php?act=guide">
       <i class="bi bi-person-badge"></i> Quản lý nhân viên
     </a>
+   <a href="index.php?act=schedule">
+      <i class="bi bi-calendar-event"></i> Quản lý lịch trình 
+    </a>
+       <a href="index.php?act=service">
+      <i class="bi bi-calendar-event"></i> Quản lý dịch vụ
+    </a>
 
     <a href="index.php?act=tour">
       <i class="bi bi-card-list"></i> Quản lý Tour

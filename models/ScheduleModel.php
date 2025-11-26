@@ -1,4 +1,4 @@
-    <?php
+<?php
 require_once __DIR__ . "/../commons/env.php";
 require_once __DIR__ . "/../commons/function.php";
 
