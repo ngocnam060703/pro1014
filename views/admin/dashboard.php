@@ -48,6 +48,14 @@
     <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')">
       <i class="bi bi-box-arrow-right"></i> Đăng xuất
     </a>
+
+    <a href="index.php?act=guide-assign">
+  <i class="bi bi-card-list"></i> Phân công HDV
+</a>
+
+  </a>
+</li>
+
   </div>
 
   <!-- CONTENT -->

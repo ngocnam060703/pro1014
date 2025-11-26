@@ -1,31 +1,108 @@
-<h2>Sửa phân công hướng dẫn viên</h2>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sửa phân công HDV</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+body { background: linear-gradient(to right, #fbc2eb, #a6c1ee); font-family: 'Segoe UI', sans-serif; }
+.form-container {
+  max-width: 900px; margin: 40px auto; background: #fff; padding: 30px;
+  border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  border-top: 8px solid #ff6a00;
+}
+.form-header { font-weight: 700; color: #ff6a00; margin-bottom: 25px; }
+.form-section { padding: 15px 20px; margin-bottom: 20px; border-radius: 12px; background: linear-gradient(to right, #fdfbfb, #ebedee); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.btn-primary { background: linear-gradient(45deg,#ff6a00,#ee0979); border: none; }
+.btn-primary:hover { background: linear-gradient(45deg,#ee0979,#ff6a00); }
+.btn-secondary { background: #6c757d; border: none; }
+</style>
+</head>
+<body>
 
-<form action="index.php?act=guide-assign-update" method="post">
+<div class="form-container">
+  <h3 class="form-header"><i class="bi bi-pencil-square"></i> Sửa phân công HDV</h3>
 
+  <form action="index.php?act=guide-assign-update" method="POST">
     <input type="hidden" name="id" value="<?= $assign['id'] ?>">
+    <div class="row g-3">
 
-    <label>Hướng dẫn viên</label>
-    <select name="guide_id" class="form-control">
-        <?php foreach ($guides as $g): ?>
-            <option value="<?= $g['id'] ?>" 
-                    <?= $assign['guide_id']==$g['id']?'selected':'' ?>>
-                <?= $g['name'] ?>
+      <div class="col-md-6 form-section">
+        <label class="form-label">Hướng dẫn viên</label>
+        <select name="guide_id" class="form-select" required>
+          <option value="">-- Chọn HDV --</option>
+          <?php foreach($guides as $g): ?>
+            <option value="<?= $g['id'] ?>" <?= $assign['guide_id']==$g['id'] ? 'selected' : '' ?>>
+              <?= htmlspecialchars($g['fullname']) ?>
             </option>
-        <?php endforeach; ?>
-    </select>
+          <?php endforeach; ?>
+        </select>
+      </div>
 
-    <label>Chuyến đi</label>
-    <select name="departure_id" class="form-control">
-        <?php foreach ($departures as $d): ?>
-            <option value="<?= $d['id'] ?>" 
-                    <?= $assign['departure_id']==$d['id']?'selected':'' ?>>
-                <?= $d['title'] ?>
+      <div class="col-md-6 form-section">
+        <label class="form-label">Tour</label>
+        <select name="tour_id" class="form-select" required>
+          <option value="">-- Chọn Tour --</option>
+          <?php foreach($tours as $t): ?>
+            <option value="<?= $t['id'] ?>" <?= $assign['tour_id']==$t['id'] ? 'selected' : '' ?>>
+              <?= htmlspecialchars($t['title']) ?>
             </option>
-        <?php endforeach; ?>
-    </select>
+          <?php endforeach; ?>
+        </select>
+      </div>
 
-    <label>Ghi chú</label>
-    <textarea name="note" class="form-control"><?= $assign['note'] ?></textarea>
+      <div class="col-md-6 form-section">
+        <label class="form-label">Lịch khởi hành</label>
+        <select name="departure_id" class="form-select" required>
+          <option value="">-- Chọn lịch --</option>
+          <?php foreach($departures as $d): ?>
+            <option value="<?= $d['id'] ?>" <?= $assign['departure_id']==$d['id'] ? 'selected' : '' ?>>
+              <?= htmlspecialchars($d['departure_time'].' | '.$d['meeting_point']) ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
 
-    <button class="btn btn-primary mt-3">Cập nhật</button>
-</form>
+      <div class="col-md-6 form-section">
+        <label class="form-label">Ngày khởi hành</label>
+        <input type="date" name="departure_date" class="form-control" value="<?= $assign['departure_date'] ?>" required>
+      </div>
+
+      <div class="col-md-6 form-section">
+        <label class="form-label">Điểm tập trung</label>
+        <input type="text" name="meeting_point" class="form-control" value="<?= htmlspecialchars($assign['meeting_point']) ?>">
+      </div>
+
+      <div class="col-md-6 form-section">
+        <label class="form-label">Số khách tối đa</label>
+        <input type="number" name="max_people" class="form-control" min="1" value="<?= $assign['max_people'] ?>" required>
+      </div>
+
+      <div class="col-12 form-section">
+        <label class="form-label">Ghi chú</label>
+        <textarea name="note" class="form-control" rows="3"><?= htmlspecialchars($assign['note']) ?></textarea>
+      </div>
+
+      <div class="col-md-6 form-section">
+        <label class="form-label">Trạng thái</label>
+        <select name="status" class="form-select" required>
+          <option value="scheduled" <?= $assign['status']=='scheduled' ? 'selected' : '' ?>>Chưa bắt đầu</option>
+          <option value="in_progress" <?= $assign['status']=='in_progress' ? 'selected' : '' ?>>Đang thực hiện</option>
+          <option value="completed" <?= $assign['status']=='completed' ? 'selected' : '' ?>>Hoàn thành</option>
+        </select>
+      </div>
+
+      <div class="col-12 d-flex justify-content-between mt-3">
+        <a href="index.php?act=guide-assign" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Quay lại</a>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Cập nhật phân công</button>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
