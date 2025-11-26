@@ -1,19 +1,26 @@
 <?php
 class GuideClientController {
 
+    public function loginPost() {
+        $username = $_POST['account_id'];
+        $password = $_POST['password'];
+
+        $model = new GuideModel();
+        $hdv = $model->login($username, $password);
+
+        if ($hdv) {
+            $_SESSION['hdv'] = $hdv;
+            header("Location: ?act=hdv_dashboard");
+        } else {
+            header("Location: ?act=hdv_login&error=1");
+        }
+    }
+
     public function dashboard() {
-        require_once __DIR__ . '/../views/client_hdv/dashboard.php';
-    }
-
-    public function schedule() {
-        require_once __DIR__ . '/../views/client_hdv/schedule.php';
-    }
-
-    public function journal() {
-        require_once __DIR__ . '/../views/client_hdv/journal.php';
-    }
-
-    public function incident() {
-        require_once __DIR__ . '/../views/client_hdv/incident.php';
+        if (!isset($_SESSION['hdv'])) {
+            header("Location: ?act=hdv_login");
+            exit;
+        }
+        require_once 'views/client_hdv/dashboard.php';
     }
 }

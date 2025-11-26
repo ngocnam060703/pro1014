@@ -16,7 +16,8 @@
     </nav>
 
     <div class="container mt-4">
-        <h3>Xin chào, Hướng dẫn viên!</h3>
+        <h3>Xin chào, <?= $_SESSION['user']['username'] ?>!</h3>
+
         <p>Chọn chức năng bên dưới:</p>
 
         <div class="row mt-4">

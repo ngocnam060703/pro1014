@@ -7,7 +7,8 @@ if ($user) {
     $_SESSION["user"] = [
         "id" => $user["id"],
         "username" => $user["username"],
-        "role" => $user["role"]
+        "role" => $user["role"],
+        "full_name" => $user["full_name"]
     ];
 }
 // =====================
@@ -55,7 +56,7 @@ $guideActions = [
     "hdv_schedule",
     "hdv_journal",
     "hdv_incident"
-];
+];  
 
 // =====================
 // CHECK PERMISSION
@@ -300,23 +301,26 @@ case "account-delete":
     $guideClientController->dashboard();
     break;
 
-    case 'hdv_schedule':
-        $guideClientController->schedule();
-        break;
-
-    case 'hdv_journal':
-        $guideClientController->journal();
-        break;
-
-    case 'hdv_incident':
-        $guideClientController->incident();
-        break;
-
     case "hdv_logout":
     session_unset();
     session_destroy();
     header("Location: index.php?act=loginForm"); // hoặc login form HDV riêng nếu có
     exit;
+
+    case 'hdv_login': // hiển thị form login HDV
+        $error = isset($_GET['error']) ? "Đăng nhập thất bại!" : '';
+        require 'views/client_hdv/login.php';
+        break;
+
+case 'hdv_login_post':
+    $controller = new GuideClientController();
+    $controller->loginPost();
+    break;
+
+case 'hdv_dashboard':
+    $controller = new GuideClientController();
+    $controller->dashboard();
+    break;
 
 
 
