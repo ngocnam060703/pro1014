@@ -19,7 +19,7 @@ class GuideModel {
 
     public function updateData($id, $data) {
         $sql = "UPDATE guides 
-                SET name = ?, phone = ?, email = ?, status = ?
+                SET fullname = ?, phone = ?, email = ?, certificate = ?
                 WHERE id = ?";
         return pdo_execute($sql, $data['fullname'], $data['phone'], $data['email'], $data['certificate'], $id);
     }
