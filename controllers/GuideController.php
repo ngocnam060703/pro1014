@@ -54,7 +54,7 @@ class GuideController {
             "fullname" => $_POST["fullname"],
             "phone" => $_POST["phone"],
             "email" => $_POST["email"],
-            "status" => $_POST["certificate"]
+            "certificate" => $_POST["certificate"]
         ];
 
         $this->guide->updateData($id, $data);

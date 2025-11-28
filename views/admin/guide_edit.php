@@ -16,8 +16,8 @@
             <input type="hidden" name="id" value="<?= $guide['id'] ?>">
 
             <div class="mb-3">
-                <label for="name" class="form-label">Tên</label>
-                <input type="text" class="form-control" id="name" name="name" value="<?= $guide['name'] ?>" required>
+                <label for="fullname" class="form-label">Tên</label>
+                <input type="text" class="form-control" id="fullname" name="fullname" value="<?= $guide['fullname'] ?>" required>
             </div>
 
             <div class="mb-3">
@@ -31,11 +31,9 @@
             </div>
 
             <div class="mb-3">
-                <label for="status" class="form-label">Trạng thái</label>
-                <select class="form-select" id="status" name="status">
-                    <option value="active" <?= $guide['status'] === 'active' ? 'selected' : '' ?>>Đang làm</option>
-                    <option value="inactive" <?= $guide['status'] === 'inactive' ? 'selected' : '' ?>>Tạm nghỉ</option>
-                </select>
+                <label for="certificate" class="form-label">Chứng chỉ</label>
+                <input type="text" class="form-control" id="certificate" name="certificate" value="<?= $guide['certificate'] ?>">
+               
             </div>
 
             <button type="submit" class="btn btn-success">
