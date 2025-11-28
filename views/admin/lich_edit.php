@@ -1,3 +1,12 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sửa Lịch - <?= $tour['title'] ?></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
 <div class="container mt-4">
     <h3>Sửa Lịch Khởi Hành cho Tour: <?= htmlspecialchars($tour['title']) ?></h3>
     <form action="index.php?act=lichUpdate" method="POST">
@@ -29,3 +38,5 @@
         <a href="index.php?act=lich&tour_id=<?= $tour['id'] ?>" class="btn btn-secondary">Hủy</a>
     </form>
 </div>
+</body>
+</html>

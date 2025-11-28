@@ -133,6 +133,34 @@ switch ($act) {
 
 
     // =====================
+    // LỊCH TOUR
+    // =====================
+    case "lich":
+        $tourController->lichList();
+        break;
+
+    case "lich-create":
+        $tourController->lichCreate();
+        break;
+
+    case "lich-store":
+        $tourController->lichStore();
+        break;
+
+    case "lich-edit":
+        $tourController->lichEdit();
+        break;
+
+    case "lich-update":
+        $tourController->lichUpdate();
+        break;
+
+    case "lich-delete":
+        $tourController->lichDelete();
+        break;
+
+
+    // =====================
     // SCHEDULE
     // =====================
     case "schedule":$scheduleController->scheduleList();
