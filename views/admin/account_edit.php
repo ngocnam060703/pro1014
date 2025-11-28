@@ -1,67 +1,102 @@
+<?php
+if (session_status() == PHP_SESSION_NONE) session_start();
+$user = $user ?? ['username'=>'','full_name'=>'','email'=>'','phone'=>'','role'=>'user','status'=>'active'];
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sửa tài khoản</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><?= isset($user['id']) ? 'Sửa tài khoản' : 'Thêm tài khoản' ?></title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+body { background: #f5f6fa; font-family:'Segoe UI', sans-serif; }
+.sidebar { height:100vh; background:#343a40; padding-top:20px; }
+.sidebar a{ color:#ddd; padding:12px; display:block; text-decoration:none; }
+.sidebar a:hover{ background:#495057; color:#fff; border-left:3px solid #0d6efd; }
+.content{ padding:30px; }
+.card{ border-radius:15px; box-shadow:0 8px 20px rgba(0,0,0,0.1); }
+.btn-primary{ background: linear-gradient(45deg,#5a5afc,#fc5a8d); border:none; }
+.btn-primary:hover{ background: linear-gradient(45deg,#fc5a8d,#5a5afc); }
+</style>
 </head>
 <body>
 <div class="row g-0">
-  <div class="col-2" style="background:#343a40; min-height:100vh; padding-top:20px; color:#ddd;">
-    <h4 class="text-center">ADMIN</h4>
-    <a href="index.php?act=dashboard" style="color:#ddd; display:block; padding:8px;">Dashboard</a>
-    <a href="index.php?act=account" style="color:#ddd; display:block; padding:8px;">Quản lý tài khoản</a>
+
+  <!-- SIDEBAR -->
+  <div class="col-2 sidebar">
+    <h4 class="text-center text-light mb-4">ADMIN</h4>
+    <a href="index.php?act=dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="index.php?act=account" style="color:#fff; background:#495057; border-left:3px solid #0d6efd;"><i class="bi bi-people"></i> Quản lý tài khoản</a>
+    <a href="index.php?act=guide"><i class="bi bi-person-badge"></i> Quản lý nhân viên</a>
+    <a href="index.php?act=schedule"><i class="bi bi-calendar-event"></i> Quản lý lịch trình</a>
+    <a href="index.php?act=service"><i class="bi bi-grid"></i> Quản lý dịch vụ</a>
+    <a href="index.php?act=tour"><i class="bi bi-card-list"></i> Quản lý Tour</a>
+    <a href="index.php?act=guide-assign"><i class="bi bi-card-list"></i> Phân công HDV</a>
+    <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a>
   </div>
-  <div class="col-10 p-4">
-    <h3>Sửa tài khoản</h3>
-    <form action="index.php?act=account-update" method="POST">
-      <input type="hidden" name="id" value="<?= $user['id'] ?>">
-      
-      <div class="mb-3">
-        <label class="form-label">Tên đăng nhập</label>
-        <input name="username" class="form-control" required value="<?= $user['username'] ?>">
-      </div>
 
-      <div class="mb-3">
-        <label class="form-label">Họ và tên</label>
-        <input name="full_name" class="form-control" required value="<?= $user['full_name'] ?>">
-      </div>
+  <!-- CONTENT -->
+  <div class="col-10 content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="bi bi-person-circle"></i> <?= isset($user['id']) ? 'Sửa tài khoản' : 'Thêm tài khoản' ?></h3>
+        <a href="index.php?act=account" class="btn btn-secondary"><i class="bi bi-arrow-left-circle"></i> Quay lại danh sách</a>
+    </div>
 
-      <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input name="email" type="email" class="form-control" required value="<?= $user['email'] ?>">
-      </div>
+    <div class="card p-4">
+      <form action="index.php?act=<?= isset($user['id']) ? 'account-update' : 'account-store' ?>" method="post">
+          <?php if(isset($user['id'])): ?>
+            <input type="hidden" name="id" value="<?= $user['id'] ?>">
+          <?php endif; ?>
 
-      <div class="mb-3">
-        <label class="form-label">Số điện thoại</label>
-        <input name="phone" class="form-control" value="<?= $user['phone'] ?>">
-      </div>
+          <div class="mb-3">
+              <label class="form-label">Tên đăng nhập</label>
+              <input type="text" name="username" class="form-control" value="<?= htmlspecialchars($user['username']) ?>" required>
+          </div>
 
-      <div class="mb-3">
-        <label class="form-label">Mật khẩu (để trống nếu không đổi)</label>
-        <input name="password" type="password" class="form-control">
-      </div>
+          <div class="mb-3">
+              <label class="form-label">Họ & Tên</label>
+              <input type="text" name="full_name" class="form-control" value="<?= htmlspecialchars($user['full_name']) ?>" required>
+          </div>
 
-      <div class="mb-3">
-        <label class="form-label">Vai trò</label>
-        <select name="role" class="form-select">
-          <option value="admin" <?= $user['role']=='admin' ? 'selected' : '' ?>>Admin</option>
-          <option value="user" <?= $user['role']=='user' ? 'selected' : '' ?>>User</option>
-        </select>
-      </div>
+          <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($user['email']) ?>" required>
+          </div>
 
-      <div class="mb-3">
-        <label class="form-label">Trạng thái</label>
-        <select name="status" class="form-select">
-          <option value="active" <?= $user['status']=='active' ? 'selected' : '' ?>>Active</option>
-          <option value="inactive" <?= $user['status']=='inactive' ? 'selected' : '' ?>>Inactive</option>
-        </select>
-      </div>
+          <div class="mb-3">
+              <label class="form-label">Số điện thoại</label>
+              <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user['phone']) ?>">
+          </div>
 
-      <button class="btn btn-success">Cập nhật</button>
-      <a href="index.php?act=account" class="btn btn-secondary">Quay lại</a>
-    </form>
+          <div class="mb-3">
+              <label class="form-label">Mật khẩu (để trống nếu không đổi)</label>
+              <input type="password" name="password" class="form-control">
+          </div>
+
+          <div class="mb-3">
+              <label class="form-label">Vai trò</label>
+              <select name="role" class="form-select">
+                  <option value="admin" <?= $user['role']=='admin'?'selected':'' ?>>Admin</option>
+                  <option value="user" <?= $user['role']=='user'?'selected':'' ?>>User</option>
+              </select>
+          </div>
+
+          <div class="mb-3">
+              <label class="form-label">Trạng thái</label>
+              <select name="status" class="form-select">
+                  <option value="active" <?= $user['status']=='active'?'selected':'' ?>>Active</option>
+                  <option value="inactive" <?= $user['status']=='inactive'?'selected':'' ?>>Inactive</option>
+              </select>
+          </div>
+
+          <button class="btn btn-primary"><i class="bi bi-save"></i> <?= isset($user['id']) ? 'Cập nhật' : 'Thêm' ?></button>
+      </form>
+    </div>
   </div>
+
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
