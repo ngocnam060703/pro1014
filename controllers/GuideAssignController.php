@@ -6,10 +6,12 @@ class GuideAssignController {
 
     private $assign;
     private $guide;
+    private $tours;
 
     public function __construct() {
         $this->assign = new GuideAssignModel();
         $this->guide = new GuideModel();
+        $this->tours = new TourModel();
     }
 
     public function index() {
@@ -19,6 +21,8 @@ class GuideAssignController {
 
     public function create() {
         $guides = $this->guide->all();
+        $guides = $this->guide->all();
+        $tours = $this->tours->getAllTours();
         $departures = pdo_query("SELECT * FROM departures");
 
         include "views/admin/guide_assign_create.php";
