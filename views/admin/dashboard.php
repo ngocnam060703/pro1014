@@ -31,6 +31,7 @@
     <a href="index.php?act=schedule"><i class="bi bi-calendar-event"></i> Quản lý lịch trình </a>
     <a href="index.php?act=service"><i class="bi bi-calendar-event"></i> Quản lý dịch vụ</a>
     <a href="index.php?act=tour"><i class="bi bi-card-list"></i> Quản lý Tour</a>
+    <a href="index.php?act=booking"><i class="bi bi-cart"></i> Quản lý Booking</a>
     <a href="index.php?act=guide-assign"><i class="bi bi-card-list"></i> Phân công HDV</a>
 
     <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')">

@@ -11,6 +11,8 @@ require_once "controllers/GuideAssignController.php";
 require_once "controllers/GuideJournalController.php";
 require_once "controllers/ScheduleController.php";
 require_once "controllers/ServiceController.php";
+require_once "controllers/AdminBookingController.php";
+
 require_once "controllers/GuideAuthController.php";
 
 
@@ -25,6 +27,8 @@ $guideAssignController   = new GuideAssignController();
 $guideJournalController  = new GuideJournalController();
 $scheduleController      = new ScheduleController();
 $serviceController       = new ServiceController();
+$adminBookingController = new AdminBookingController();
+
 $guideAuth              = new GuideAuthController();
 
 
@@ -372,6 +376,26 @@ switch ($act) {
     case "guide-journal-delete":
         $guideJournalController->delete();
         break;
+    
+    // =====================
+    // BOOKING MANAGEMENT
+    // =====================
+    case "booking":
+    $adminBookingController->bookingList();
+    break;
+
+    case "booking-detail":
+    $adminBookingController->bookingDetail();
+    break;
+
+    case "booking-update-status":
+    $adminBookingController->updateStatus();
+    break;
+
+    case "booking-delete":
+    $adminBookingController->delete();
+    break;
+
 
 
     // =====================
