@@ -11,6 +11,8 @@ require_once "controllers/GuideAssignController.php";
 require_once "controllers/GuideJournalController.php";
 require_once "controllers/ScheduleController.php";
 require_once "controllers/ServiceController.php";
+require_once "controllers/GuideAuthController.php";
+
 
 
 // =====================
@@ -23,6 +25,7 @@ $guideAssignController   = new GuideAssignController();
 $guideJournalController  = new GuideJournalController();
 $scheduleController      = new ScheduleController();
 $serviceController       = new ServiceController();
+$guideAuth              = new GuideAuthController();
 
 
 
@@ -32,34 +35,102 @@ $serviceController       = new ServiceController();
 $act = $_GET["act"] ?? "";
 
 
-
-// =====================
-// ROUTE: LOGIN / LOGOUT
-// =====================
 switch ($act) {
+ case "loginForm":
+        $adminController->loginForm();
+        exit;
 
     case "login":
         $adminController->login();
         exit;
 
-    case "loginForm":
-        $adminController->loginForm();
-        exit;
-
     case "logout":
         $adminController->logout();
+        exit;
+
+    /* ==== HDV LOGIN ==== */
+    case "hdv_login":
+        $guideAuth->loginForm();
+        exit;
+
+    case "hdv_login_post":
+        $guideAuth->loginPost();
+        exit;
+
+    case "hdv_register":
+        $guideAuth->registerForm();
+        exit;
+
+    case "hdv_register_post":
+        $guideAuth->registerPost();
+        exit;
+
+    case "hdv_logout":
+        $guideAuth->logout();
         exit;
 }
 
 
-// =====================
-// CHECK LOGIN
-// =====================
-$publicActions = ["login", "loginForm"];
 
-if (!isset($_SESSION["user"]) && !in_array($act, $publicActions)) {
-    header("Location: index.php?act=loginForm");
-    exit;
+/* ============================================================
+    2) ROUTER CLIENT – HƯỚNG DẪN VIÊN
+============================================================ */
+
+if (strpos($act, "hdv_") === 0) {
+
+    // Bắt buộc login trước khi vào panel HDV
+    if (!isset($_SESSION['guide_logged_in'])) {
+        header("Location: index.php?act=hdv_login");
+        exit;
+    }
+
+    switch ($act) {
+
+        case "hdv_home":
+            $guideController->home(); // Controller xử lý và load view
+            break;
+
+        case "hdv_lichtrinh":
+            include "controllers/hdv/lichtrinh.php";
+            break;
+
+        case "hdv_nhatky":
+            include "controllers/hdv/nhatky.php";
+            break;
+
+        case "hdv_data":
+            include "controllers/hdv/data.php";
+            break;
+
+        default:
+            $guideController->home();
+            break;
+    }
+
+    exit;  // RẤT QUAN TRỌNG ‼
+}
+
+
+
+/* ============================================================
+    3) BẢO VỆ ADMIN – Chặn người chưa login
+============================================================ */
+
+$adminPublic = [
+    "login", "loginForm",
+    "hdv_login", "hdv_register",
+    "hdv_login_post", "hdv_register_post"
+];
+
+if (!isset($_SESSION["user"]) && !in_array($act, $adminPublic)) {
+
+    // Nếu là route HDV → đã xử lý ở trên nên không chặn
+    if (strpos($act, "hdv_") === 0) {
+        // bỏ qua
+    } else {
+        header("Location: index.php?act=loginForm");
+        exit;
+    }
 }
 
 
