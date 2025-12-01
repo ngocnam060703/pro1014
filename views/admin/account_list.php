@@ -9,8 +9,10 @@ if (session_status() == PHP_SESSION_NONE) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quản lý tài khoản</title>
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
 <style>
 body {
     background: linear-gradient(to right, #dfe9f3, #ffffff);
@@ -33,11 +35,17 @@ body {
     color:#fff; background:#495057; border-left:3px solid #0d6efd;
 }
 .content { padding:30px; }
-.card { border-radius:18px; box-shadow:0 8px 20px rgba(0,0,0,0.15); }
-.btn-primary, .btn-success, .btn-secondary, .btn-warning, .btn-danger {
+.card {
+    border-radius:18px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.15);
+}
+.table thead {
+    background: linear-gradient(to right, #5a5afc, #6c63ff);
+    color:#fff;
+}
+.btn-primary, .btn-warning, .btn-danger {
     border-radius:50px;
 }
-.table th { background:#0d6efd; color:#fff; }
 </style>
 </head>
 <body>
@@ -52,55 +60,67 @@ body {
     <a href="index.php?act=schedule"><i class="bi bi-calendar-event"></i> Quản lý lịch trình</a>
     <a href="index.php?act=service"><i class="bi bi-grid"></i> Quản lý dịch vụ</a>
     <a href="index.php?act=tour"><i class="bi bi-card-list"></i> Quản lý Tour</a>
+    <a href="index.php?act=booking"><i class="bi bi-cart"></i> Quản lý Booking</a>
     <a href="index.php?act=guide-assign"><i class="bi bi-card-list"></i> Phân công HDV</a>
     <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a>
   </div>
 
   <!-- CONTENT -->
   <div class="col-10 content">
-    <div class="d-flex justify-content-between mb-3">
-      <h3 class="fw-bold text-primary"><i class="bi bi-people"></i> Danh sách tài khoản</h3>
-      <a href="index.php?act=account-create" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Thêm tài khoản
-      </a>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-primary"><i class="bi bi-people"></i> Danh sách tài khoản</h3>
+        <a href="index.php?act=account-create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Thêm tài khoản
+        </a>
     </div>
 
-    <div class="card p-4">
-      <div class="table-responsive">
-        <table class="table table-bordered table-hover mb-0 align-middle">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Họ & Tên</th>
-              <th>Email</th>
-              <th>Vai trò</th>
-              <th>Trạng thái</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php if (!empty($users)) { foreach ($users as $u) { ?>
-              <tr>
-                <td><?= htmlspecialchars($u['id'] ?? '') ?></td>
-                <td><?= htmlspecialchars($u['name'] ?? $u['full_name'] ?? '') ?></td>
-                <td><?= htmlspecialchars($u['email'] ?? '') ?></td>
-                <td><?= htmlspecialchars($u['role'] ?? '') ?></td>
-                <td><?= htmlspecialchars($u['status'] ?? '') ?></td>
-                <td>
-                  <a href="index.php?act=account-edit&id=<?= $u['id'] ?>" class="btn btn-warning btn-sm">
-                    <i class="bi bi-pencil-square"></i> Sửa
-                  </a>
-                  <a href="index.php?act=account-delete&id=<?= $u['id'] ?>" onclick="return confirm('Bạn có chắc muốn xóa?')" class="btn btn-danger btn-sm">
-                    <i class="bi bi-trash"></i> Xóa
-                  </a>
-                </td>
-              </tr>
-            <?php } } else { ?>
-              <tr><td colspan="6" class="text-center text-muted">Không có tài khoản</td></tr>
-            <?php } ?>
-          </tbody>
+    <?php if (!empty($_SESSION['message'])): ?>
+        <div class="alert alert-success alert-dismissible fade show">
+            <?= $_SESSION['message'] ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['message']); ?>
+    <?php endif; ?>
+
+    <div class="card p-3 shadow-sm">
+        <table class="table table-bordered table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Họ & Tên</th>
+                    <th>Email</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th class="text-center">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (!empty($users)) { foreach ($users as $u) { ?>
+                    <tr>
+                        <td><?= htmlspecialchars($u['id'] ?? '') ?></td>
+                        <td class="fw-semibold text-primary"><?= htmlspecialchars($u['name'] ?? $u['full_name'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($u['email'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($u['role'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($u['status'] ?? '') ?></td>
+                        <td class="text-center">
+                            <a href="index.php?act=account-edit&id=<?= $u['id'] ?>" class="btn btn-warning btn-sm me-1">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <a href="index.php?act=account-delete&id=<?= $u['id'] ?>" 
+                               onclick="return confirm('Bạn có chắc muốn xóa?')" 
+                               class="btn btn-danger btn-sm">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                <?php } } else { ?>
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-3">Không có tài khoản</td>
+                    </tr>
+                <?php } ?>
+            </tbody>
         </table>
-      </div>
     </div>
 
   </div>
@@ -109,3 +129,4 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+                  
