@@ -5,17 +5,17 @@ class GuideAssignModel {
 
     // Lấy tất cả phân công kèm HDV, tour, ngày khởi hành
     public function all() {
-        $sql = "SELECT ga.*, 
-                       g.fullname AS guide_name, 
-                       t.title AS tour_title, 
-                       d.departure_date 
-                FROM guide_assign ga
-                LEFT JOIN guides g ON ga.guide_id = g.id
-                LEFT JOIN departures d ON ga.departure_id = d.id
-                LEFT JOIN tours t ON d.tour_id = t.id
-                ORDER BY ga.id DESC";
-        return pdo_query($sql);
-    }
+    $sql = "SELECT ga.*, 
+                   g.fullname AS guide_name, 
+                   t.title AS tour_title
+            FROM guide_assign ga
+            LEFT JOIN guides g ON ga.guide_id = g.id
+            LEFT JOIN departures d ON ga.departure_id = d.id
+            LEFT JOIN tours t ON d.tour_id = t.id
+            ORDER BY ga.id DESC";
+    return pdo_query($sql);
+}
+
 
     // Lấy 1 phân công theo id
     public function find($id) {
