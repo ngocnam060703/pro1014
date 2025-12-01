@@ -1,5 +1,6 @@
 <?php
 require_once "models/GuideModel.php";
+require_once "models/hdv_model.php"; // model HDV để lấy tour, logs
 
 class GuideController {
 
@@ -9,27 +10,32 @@ class GuideController {
         $this->guide = new GuideModel();
     }
 
-    // ====================
-    // LIST
-    // ====================
+    /* ====================
+       ADMIN - LIST
+    ==================== */
     public function index() {
         $data = $this->guide->all();
         include "views/admin/guide_list.php";
     }
 
-    // ====================
-    // CREATE
-    // ====================
+    /* ====================
+       ADMIN - CREATE
+    ==================== */
     public function create() {
         include "views/admin/guide_create.php";
     }
 
     public function store() {
+        $password = $_POST['password'] ?? '';
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+
         $data = [
             "fullname" => $_POST["fullname"],
             "phone" => $_POST["phone"],
             "email" => $_POST["email"],
-            "status" => $_POST["status"]
+            "certificate" => $_POST["certificate"] ?? null,
+            "account_id" => $_POST["account_id"],
+            "password" => $password_hash
         ];
 
         $this->guide->store($data);
@@ -37,11 +43,12 @@ class GuideController {
         if (session_status() == PHP_SESSION_NONE) session_start();
         $_SESSION['message'] = "Thêm nhân viên thành công!";
         header("Location: index.php?act=guide");
+        exit;
     }
 
-    // ====================
-    // EDIT
-    // ====================
+    /* ====================
+       ADMIN - EDIT
+    ==================== */
     public function edit() {
         $id = $_GET["id"];
         $guide = $this->guide->find($id);
@@ -64,9 +71,9 @@ class GuideController {
         header("Location: index.php?act=guide");
     }
 
-    // ====================
-    // DELETE
-    // ====================
+    /* ====================
+       ADMIN - DELETE
+    ==================== */
     public function delete() {
         $id = $_GET["id"];
         $this->guide->delete($id);
@@ -74,5 +81,48 @@ class GuideController {
         if (session_status() == PHP_SESSION_NONE) session_start();
         $_SESSION['message'] = "Xóa nhân viên thành công!";
         header("Location: index.php?act=guide");
+    }
+
+
+    /* ====================
+       HDV DASHBOARD - HOME
+    ==================== */
+    public function home() {
+        $guide_id = $_SESSION['guide']['id'] ?? 0;
+
+        // Lấy số tour được giao
+        $count_tours = getCountToursByGuide($guide_id);
+
+        // Lấy số nhật ký đã gửi
+        $count_logs = getCountLogsByGuide($guide_id);
+
+        include "views/client_hdv/home.php";
+    }
+
+    /* ====================
+       HDV LỊCH TRÌNH
+    ==================== */
+    public function schedule() {
+        $guide_id = $_SESSION['guide']['id'] ?? 0;
+        $schedules = getScheduleByGuide($guide_id); // Hàm trong hdv_model.php
+        include "views/client_hdv/lichtrinh.php";
+    }
+
+    /* ====================
+       HDV NHẬT KÝ
+    ==================== */
+    public function journal() {
+        $guide_id = $_SESSION['guide']['id'] ?? 0;
+        $logs = getLogsByGuide($guide_id); // Hàm trong hdv_model.php
+        include "views/client_hdv/nhatky.php";
+    }
+
+    /* ====================
+       HDV DỮ LIỆU KHÁC
+    ==================== */
+    public function data() {
+        $guide_id = $_SESSION['guide']['id'] ?? 0;
+        // lấy dữ liệu khác nếu cần
+        include "views/client_hdv/data.php";
     }
 }

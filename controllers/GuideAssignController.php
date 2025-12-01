@@ -39,24 +39,23 @@ class GuideAssignController {
     }
 
     public function store() {
-        if(!empty($_POST)) {
-            $data = [
-                "guide_id" => $_POST["guide_id"] ?? null,
-                "tour_id" => $_POST["tour_id"] ?? null,
-                "departure_id" => $_POST["departure_id"] ?? null,
-                "departure_date" => $_POST["departure_date"] ?? null,
-                "meeting_point" => $_POST["meeting_point"] ?? '',
-                "max_people" => $_POST["max_people"] ?? 0,
-                "note" => $_POST["note"] ?? '',
-                "status" => $_POST["status"] ?? 'scheduled',
-                "assigned_at" => date("Y-m-d H:i:s")
-            ];
-
-            $this->assign->store($data);
-            $_SESSION['message'] = "Thêm phân công HDV thành công!";
-        }
-        header("Location: index.php?act=guide-assign");
+    if(!empty($_POST)) {
+        $data = [
+            "guide_id" => $_POST["guide_id"],      // HDV được chọn
+            "tour_id" => $_POST["tour_id"],        // Tour được chọn
+            "departure_date" => $_POST["departure_date"], 
+            "meeting_point" => $_POST["meeting_point"] ?? '',
+            "max_people" => $_POST["max_people"] ?? 0,
+            "note" => $_POST["note"] ?? '',
+            "status" => 'scheduled',               // mặc định Chưa bắt đầu
+            "assigned_at" => date("Y-m-d H:i:s")
+        ];
+        $this->assign->store($data);
+        $_SESSION['message'] = "Phân công HDV thành công!";
     }
+    header("Location: index.php?act=guide-assign");
+}
+
 
     // ====================
     // EDIT PHÂN CÔNG
