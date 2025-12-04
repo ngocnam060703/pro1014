@@ -96,7 +96,7 @@ class GuideController {
         // Lấy số nhật ký đã gửi
         $count_logs = getCountLogsByGuide($guide_id);
 
-        include "views/client_hdv/home.php";
+        include "views/hdv/dashboard.php";
     }
 
     /* ====================
@@ -105,7 +105,7 @@ class GuideController {
     public function schedule() {
         $guide_id = $_SESSION['guide']['id'] ?? 0;
 $schedules = getScheduleByGuide($guide_id); // Hàm trong hdv_model.php
-        include "views/client_hdv/lichtrinh.php";
+        include "views/hdv/lichtrinh.php";
     }
 
     /* ====================
@@ -114,7 +114,7 @@ $schedules = getScheduleByGuide($guide_id); // Hàm trong hdv_model.php
     public function journal() {
         $guide_id = $_SESSION['guide']['id'] ?? 0;
         $logs = getLogsByGuide($guide_id); // Hàm trong hdv_model.php
-        include "views/client_hdv/nhatky.php";
+        include "views/hdv/nhatky.php";
     }
 
     /* ====================
@@ -123,6 +123,6 @@ $schedules = getScheduleByGuide($guide_id); // Hàm trong hdv_model.php
     public function data() {
         $guide_id = $_SESSION['guide']['id'] ?? 0;
         // lấy dữ liệu khác nếu cần
-        include "views/client_hdv/data.php";
+        include "views/hdv/data.php";
     }
 }
