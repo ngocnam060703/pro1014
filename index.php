@@ -12,10 +12,7 @@ require_once "controllers/GuideJournalController.php";
 require_once "controllers/ScheduleController.php";
 require_once "controllers/ServiceController.php";
 require_once "controllers/AdminBookingController.php";
-
 require_once "controllers/GuideAuthController.php";
-
-
 
 // =====================
 // MAKE CONTROLLER INSTANCE
@@ -27,20 +24,19 @@ $guideAssignController   = new GuideAssignController();
 $guideJournalController  = new GuideJournalController();
 $scheduleController      = new ScheduleController();
 $serviceController       = new ServiceController();
-$adminBookingController = new AdminBookingController();
-
-$guideAuth              = new GuideAuthController();
-
-
+$adminBookingController  = new AdminBookingController();
+$guideAuth               = new GuideAuthController();
 
 // =====================
 // GET ACTION
 // =====================
 $act = $_GET["act"] ?? "";
 
-
+// =====================
+// ROUTE LOGIN / LOGOUT
+// =====================
 switch ($act) {
- case "loginForm":
+    case "loginForm":
         $adminController->loginForm();
         exit;
 
@@ -52,7 +48,7 @@ switch ($act) {
         $adminController->logout();
         exit;
 
-    /* ==== HDV LOGIN ==== */
+    // ==== HDV LOGIN ====
     case "hdv_login":
         $guideAuth->loginForm();
         exit;
@@ -74,52 +70,44 @@ switch ($act) {
         exit;
 }
 
-
-
-/* ============================================================
-    2) ROUTER CLIENT – HƯỚNG DẪN VIÊN
-============================================================ */
-
+// =====================
+// ROUTER HDV (HƯỚNG DẪN VIÊN)
+// =====================
 if (strpos($act, "hdv_") === 0) {
 
-    // Bắt buộc login trước khi vào panel HDV
+    // Bắt buộc login HDV
     if (!isset($_SESSION['guide_logged_in'])) {
         header("Location: index.php?act=hdv_login");
         exit;
     }
 
     switch ($act) {
-
         case "hdv_home":
-            $guideController->home(); // Controller xử lý và load view
+            include "views/hdv/dashboard.php";
             break;
 
         case "hdv_lichtrinh":
-            include "controllers/hdv/lichtrinh.php";
+            include "views/hdv/lichtrinh.php";
             break;
 
         case "hdv_nhatky":
-            include "controllers/hdv/nhatky.php";
+            include "views/hdv/nhatky.php";
             break;
 
         case "hdv_data":
-            include "controllers/hdv/data.php";
+            include "views/hdv/data.php";
             break;
 
         default:
-            $guideController->home();
+            include "views/hdv/dashboard.php";
             break;
     }
-
-    exit;  // RẤT QUAN TRỌNG ‼
+    exit;
 }
 
-
-
-/* ============================================================
-    3) BẢO VỆ ADMIN – Chặn người chưa login
-============================================================ */
-
+// =====================
+// BẢO VỆ ADMIN
+// =====================
 $adminPublic = [
     "login", "loginForm",
     "hdv_login", "hdv_register",
@@ -127,33 +115,24 @@ $adminPublic = [
 ];
 
 if (!isset($_SESSION["user"]) && !in_array($act, $adminPublic)) {
-
-    // Nếu là route HDV → đã xử lý ở trên nên không chặn
-    if (strpos($act, "hdv_") === 0) {
-        // bỏ qua
-    } else {
+    // Nếu là HDV → đã xử lý ở trên
+    if (strpos($act, "hdv_") !== 0) {
         header("Location: index.php?act=loginForm");
         exit;
     }
 }
 
-
 // =====================
-// MAIN ROUTER
+// ROUTER ADMIN / MAIN
 // =====================
 switch ($act) {
 
-    // =====================
     // DASHBOARD
-    // =====================
     case "dashboard":
         $adminController->dashboard();
         break;
 
-
-    // =====================
     // ACCOUNT MANAGEMENT
-    // =====================
     case "account":
         $adminController->accountList();
         break;
@@ -178,10 +157,7 @@ switch ($act) {
         $adminController->accountDelete();
         break;
 
-
-    // =====================
     // TOUR
-    // =====================
     case "tour":
         $tourController->index();
         break;
@@ -206,39 +182,9 @@ switch ($act) {
         $tourController->delete();
         break;
 
-
-    // =====================
-    // LỊCH TOUR
-    // =====================
-    case "lich":
-        $tourController->lichList();
-        break;
-
-    case "lich-create":
-        $tourController->lichCreate();
-        break;
-
-    case "lich-store":
-        $tourController->lichStore();
-        break;
-
-    case "lich-edit":
-        $tourController->lichEdit();
-        break;
-
-    case "lich-update":
-        $tourController->lichUpdate();
-        break;
-
-    case "lich-delete":
-        $tourController->lichDelete();
-        break;
-
-
-    // =====================
     // SCHEDULE
-    // =====================
-    case "schedule":$scheduleController->scheduleList();
+    case "schedule":
+        $scheduleController->scheduleList();
         break;
 
     case "schedule-create":
@@ -261,10 +207,7 @@ switch ($act) {
         $scheduleController->scheduleDelete();
         break;
 
-
-    // =====================
-    // SERVICE (Fixed + Clean)
-    // =====================
+    // SERVICE
     case "service":
         $serviceController->list();
         break;
@@ -289,10 +232,7 @@ switch ($act) {
         $serviceController->delete();
         break;
 
-
-    // =====================
     // GUIDE
-    // =====================
     case "guide":
         $guideController->index();
         break;
@@ -321,10 +261,7 @@ switch ($act) {
         $guideController->detail();
         break;
 
-
-    // =====================
     // GUIDE ASSIGN
-    // =====================
     case "guide-assign":
         $guideAssignController->index();
         break;
@@ -349,10 +286,7 @@ switch ($act) {
         $guideAssignController->delete();
         break;
 
-
-    // =====================
     // GUIDE JOURNAL
-    // =====================
     case "guide-journal":
         $guideJournalController->index();
         break;
@@ -376,31 +310,26 @@ switch ($act) {
     case "guide-journal-delete":
         $guideJournalController->delete();
         break;
-    
-    // =====================
+
     // BOOKING MANAGEMENT
-    // =====================
     case "booking":
-    $adminBookingController->bookingList();
-    break;
+        $adminBookingController->bookingList();
+        break;
 
     case "booking-detail":
-    $adminBookingController->bookingDetail();
-    break;
+        $adminBookingController->bookingDetail();
+        break;
 
     case "booking-update-status":
-    $adminBookingController->updateStatus();
-    break;
+        $adminBookingController->updateStatus();
+        break;
 
     case "booking-delete":
-    $adminBookingController->delete();
-    break;
+        $adminBookingController->delete();
+        break;
 
-
-
-    // =====================
     // DEFAULT
-    // =====================
-    default:$adminController->dashboard();
+    default:
+        $adminController->dashboard();
         break;
 }

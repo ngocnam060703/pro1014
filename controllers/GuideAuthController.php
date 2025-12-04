@@ -10,7 +10,7 @@ class GuideAuthController {
 
     // Hiển thị form login
     public function loginForm() {
-        include "views/client_hdv/login.php";
+        include "views/hdv/login.php";
     }
 
     // Xử lý login
@@ -43,7 +43,7 @@ class GuideAuthController {
 
     // Hiển thị form đăng ký
     public function registerForm() {
-        include "views/client_hdv/register.php";
+        include "views/hdv/register.php";
     }
 
     // Xử lý đăng ký

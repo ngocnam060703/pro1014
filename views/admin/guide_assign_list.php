@@ -68,37 +68,39 @@ body { background: #f5f6fa; font-family: 'Segoe UI', sans-serif; }
           </tr>
         </thead>
         <tbody>
-        <?php if(!empty($data)): ?>
-          <?php foreach($data as $row): ?>
-          <tr>
-            <td><?= $row['id'] ?></td>
-            <td><?= htmlspecialchars($row['guide_name'] ?? 'Chưa có') ?></td>
-            <td><?= htmlspecialchars($row['tour_name'] ?? 'Chưa có') ?></td>
-            <td><?= htmlspecialchars($row['departure_date']) ?></td>
-            <td><?= htmlspecialchars($row['meeting_point']) ?></td>
-            <td><?= $row['max_people'] ?></td>
-            <td><?= htmlspecialchars($row['note']) ?></td>
-            <td>
-              <?php 
-                $status = $row['status'] ?? 'scheduled';
-                $badge = [
-                  'scheduled'=>'badge-scheduled',
-                  'in_progress'=>'badge-in_progress',
-                  'completed'=>'badge-completed'
-                ][$status] ?? 'badge-scheduled';
-              ?>
-              <span class="badge <?= $badge ?>"><?= ucfirst(str_replace('_',' ',$status)) ?></span>
-            </td>
-            <td>
-              <a href="index.php?act=guide-assign-edit&id=<?= $row['id'] ?>" class="action-btn edit"><i class="bi bi-pencil-square"></i></a>
-              <a href="index.php?act=guide-assign-delete&id=<?= $row['id'] ?>" onclick="return confirm('Bạn có chắc chắn muốn xóa?')" class="action-btn delete"><i class="bi bi-trash"></i></a>
-            </td>
-          </tr>
-          <?php endforeach; ?>
-        <?php else: ?>
-          <tr><td colspan="9" class="text-center text-muted">Chưa có phân công HDV nào!</td></tr>
-        <?php endif; ?>
-        </tbody>
+<?php if(!empty($data)): ?>
+  <?php foreach($data as $row): ?>
+  <tr>
+    <td><?= $row['id'] ?></td>
+<td><?= htmlspecialchars($row['guide_name'] ?? 'Chưa có') ?></td>
+<td><?= htmlspecialchars($row['tour_title'] ?? 'Chưa có') ?></td>
+<td><?= htmlspecialchars($row['departure_date'] ?? '') ?></td>
+<td><?= htmlspecialchars($row['meeting_point'] ?? '') ?></td>
+<td><?= $row['max_people'] ?? '' ?></td>
+<td><?= htmlspecialchars($row['note'] ?? '') ?></td>
+<td>
+  <?php 
+    $status = $row['status'] ?? 'scheduled';
+    $badge = [
+      'scheduled'=>'badge-scheduled',
+      'in_progress'=>'badge-in_progress',
+      'completed'=>'badge-completed'
+    ][$status] ?? 'badge-scheduled';
+  ?>
+  <span class="badge <?= $badge ?>"><?= ucfirst(str_replace('_',' ',$status)) ?></span>
+</td>
+<td>
+  <a href="index.php?act=guide-assign-edit&id=<?= $row['id'] ?>" class="action-btn edit"><i class="bi bi-pencil-square"></i></a>
+  <a href="index.php?act=guide-assign-delete&id=<?= $row['id'] ?>" onclick="return confirm('Bạn có chắc chắn muốn xóa?')" class="action-btn delete"><i class="bi bi-trash"></i></a>
+</td>
+
+  </tr>
+  <?php endforeach; ?>
+<?php else: ?>
+  <tr><td colspan="9" class="text-center text-muted">Chưa có phân công HDV nào!</td></tr>
+<?php endif; ?>
+</tbody>
+
       </table>
     </div>
   </div>

@@ -1,6 +1,7 @@
 <?php
 require_once "models/GuideAssignModel.php";
 require_once "models/GuideModel.php";
+require_once "models/TourModel.php";
 
 class GuideAssignController {
 
@@ -25,50 +26,55 @@ class GuideAssignController {
         $guides = $this->guide->all();
         $tours = $this->tours->getAllTours();
         $departures = pdo_query("SELECT * FROM departures");
-
         include "views/admin/guide_assign_create.php";
     }
 
     // Thêm phân công mới
     public function store() {
-    $departure_id = $_POST["departure_id"];
-    $guide_id = $_POST["guide_id"];
-    $note = $_POST["note"];
+        $guide_id = $_POST["guide_id"];
+        $departure_id = $_POST["departure_id"];
+        $note = $_POST["note"] ?? '';
+        $status = $_POST["status"] ?? 'scheduled';
 
-    // Lấy thông tin departure
-    $departure = pdo_query_one("SELECT * FROM departures WHERE id = ?", $departure_id);
-    if (!$departure) {
-        die("Departure not found!");
+        // Lấy thông tin departure
+        $departure = pdo_query_one("SELECT * FROM departures WHERE id = ?", $departure_id);
+        if (!$departure) {
+            die("Departure not found!");
+        }
+
+        $data = [
+            "guide_id"       => $guide_id,
+            "departure_id"   => $departure_id,
+            "tour_id"        => $departure["tour_id"],
+            "departure_date" => date("Y-m-d", strtotime($departure["departure_time"])),
+            "meeting_point"  => $departure["meeting_point"],
+            "max_people"     => $departure["seats_total"],
+            "note"           => $note,
+            "status"         => $status,
+            "assigned_at"    => date("Y-m-d H:i:s")
+        ];
+
+        $this->assign->store($data);
+        header("Location: index.php?act=guide-assign");
     }
 
-    $data = [
-        "guide_id"       => $guide_id,
-        "departure_id"   => $departure_id,
-        "tour_id"        => $departure["tour_id"],
-        "departure_date" => $departure["departure_date"],  // thêm vào
-        "note"           => $note,
-        "assigned_at"    => date("Y-m-d H:i:s")
-    ];
-
-    $this->assign->store($data);
-    header("Location: index.php?act=guide-assign");
-}
     // Form chỉnh sửa
     public function edit() {
         $id = $_GET["id"];
         $assign = $this->assign->find($id);
         $guides = $this->guide->all();
+        $tours = $this->tours->getAllTours();
         $departures = pdo_query("SELECT * FROM departures");
-
         include "views/admin/guide_assign_edit.php";
     }
 
     // Cập nhật phân công
     public function update() {
         $id = $_POST["id"];
-        $departure_id = $_POST["departure_id"];
         $guide_id = $_POST["guide_id"];
-        $note = $_POST["note"];
+        $departure_id = $_POST["departure_id"];
+        $note = $_POST["note"] ?? '';
+        $status = $_POST["status"] ?? 'scheduled';
 
         $departure = pdo_query_one("SELECT * FROM departures WHERE id = ?", $departure_id);
         if (!$departure) {
@@ -76,10 +82,14 @@ class GuideAssignController {
         }
 
         $data = [
-            "guide_id"     => $guide_id,
-            "departure_id" => $departure_id,
-            "tour_id"      => $departure["tour_id"],
-            "note"         => $note
+            "guide_id"       => $guide_id,
+            "departure_id"   => $departure_id,
+            "tour_id"        => $departure["tour_id"],
+            "departure_date" => date("Y-m-d", strtotime($departure["departure_time"])),
+            "meeting_point"  => $departure["meeting_point"],
+            "max_people"     => $departure["seats_total"],
+            "note"           => $note,
+            "status"         => $status
         ];
 
         $this->assign->updateData($id, $data);
@@ -90,7 +100,6 @@ class GuideAssignController {
     public function delete() {
         $id = $_GET["id"];
         $this->assign->delete($id);
-
         header("Location: index.php?act=guide-assign");
     }
 }
