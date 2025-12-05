@@ -26,6 +26,7 @@ class GuideAssignModel {
     public function getByGuide($guide_id) {
         $sql = "SELECT 
                     ga.id,
+                    ga.departure_id,
                     t.title AS tour_name,
                     d.departure_time,
                     d.meeting_point

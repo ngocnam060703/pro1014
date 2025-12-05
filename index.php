@@ -85,10 +85,19 @@ if (strpos($act, "hdv_") === 0) {
 
     switch ($act) {
         case "hdv_home":
+            require_once "models/hdv_model.php";
+            $guide_id = $_SESSION['guide']['id'] ?? 0;
+            $totalToursToday = getCountToursTodayByGuide($guide_id);
+            $totalTours = getCountToursByGuide($guide_id);
+            $incidentsReported = getCountIncidentsByGuide($guide_id);
+            $journalsCount = getCountLogsByGuide($guide_id);
             include "views/hdv/dashboard.php";
             break;
 
         case "hdv_lichtrinh":
+            require_once "models/hdv_model.php";
+            $guide_id = $_SESSION['guide']['id'] ?? 0;
+            $schedules = getScheduleByGuide($guide_id);
             include "views/hdv/lichtrinh.php";
             break;
 
@@ -96,11 +105,194 @@ if (strpos($act, "hdv_") === 0) {
             include "views/hdv/nhatky.php";
             break;
 
+        case "hdv_journal_store":
+            require_once "models/GuideJournalModel.php";
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $journalModel = new GuideJournalModel();
+                $data = [
+                    "guide_id" => $_POST["guide_id"],
+                    "departure_id" => $_POST["departure_id"],
+                    "note" => $_POST["note"]
+                ];
+                $journalModel->store($data);
+                $_SESSION['message'] = "Thêm nhật ký thành công!";
+            }
+            header("Location: index.php?act=hdv_nhatky");
+            exit;
+            break;
+
+        case "hdv_journal_edit":
+            require_once "models/GuideJournalModel.php";
+            require_once "models/GuideAssignModel.php";
+            $id = $_GET["id"] ?? 0;
+            $journalModel = new GuideJournalModel();
+            $journal = $journalModel->find($id);
+            $guide_id = $_SESSION['guide']['id'] ?? 0;
+            // Kiểm tra quyền
+            if ($journal && $journal['guide_id'] == $guide_id) {
+                $assignModel = new GuideAssignModel();
+                $myAssigns = $assignModel->getByGuide($guide_id);
+                include "views/hdv/nhatky_edit.php";
+            } else {
+                $_SESSION['error'] = "Không có quyền truy cập!";
+                header("Location: index.php?act=hdv_nhatky");
+                exit;
+            }
+            break;
+
+        case "hdv_journal_update":
+            require_once "models/GuideJournalModel.php";
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $id = $_POST["id"];
+                $journalModel = new GuideJournalModel();
+                $journal = $journalModel->find($id);
+                $guide_id = $_SESSION['guide']['id'] ?? 0;
+                // Kiểm tra quyền
+                if ($journal && $journal['guide_id'] == $guide_id) {
+                    $data = [
+                        "guide_id" => $guide_id,
+                        "departure_id" => $_POST["departure_id"],
+                        "note" => $_POST["note"]
+                    ];
+                    $journalModel->updateData($id, $data);
+                    $_SESSION['message'] = "Cập nhật nhật ký thành công!";
+                } else {
+                    $_SESSION['error'] = "Không có quyền truy cập!";
+                }
+            }
+            header("Location: index.php?act=hdv_nhatky");
+            exit;
+            break;
+
+        case "hdv_journal_delete":
+            require_once "models/GuideJournalModel.php";
+            $id = $_GET["id"] ?? 0;
+            $journalModel = new GuideJournalModel();
+            $journal = $journalModel->find($id);
+            $guide_id = $_SESSION['guide']['id'] ?? 0;
+            // Kiểm tra quyền
+            if ($journal && $journal['guide_id'] == $guide_id) {
+                $journalModel->delete($id);
+                $_SESSION['message'] = "Xóa nhật ký thành công!";
+            } else {
+                $_SESSION['error'] = "Không có quyền truy cập!";
+            }
+            header("Location: index.php?act=hdv_nhatky");
+            exit;
+            break;
+
         case "hdv_data":
             include "views/hdv/data.php";
             break;
 
+        case "hdv_incident_store":
+            require_once "models/GuideIncidentModel.php";
+            require_once "commons/function.php";
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $incidentModel = new GuideIncidentModel();
+                $photoPath = null;
+                if (!empty($_FILES["photos"]["name"])) {
+                    $photoPath = uploadFile($_FILES["photos"], "uploads/incidents/");
+                }
+                $data = [
+                    "departure_id" => $_POST["departure_id"],
+                    "guide_id" => $_POST["guide_id"],
+                    "incident_type" => $_POST["incident_type"],
+                    "severity" => $_POST["severity"],
+                    "description" => $_POST["description"],
+                    "solution" => $_POST["solution"] ?? '',
+                    "photos" => $photoPath
+                ];
+                $incidentModel->store($data);
+                $_SESSION['message'] = "Báo cáo sự cố thành công!";
+            }
+            header("Location: index.php?act=hdv_data");
+            exit;
+            break;
+
+        case "hdv_incident_edit":
+            require_once "models/GuideIncidentModel.php";
+            require_once "models/GuideAssignModel.php";
+            $id = $_GET["id"] ?? 0;
+            $incidentModel = new GuideIncidentModel();
+            $incident = $incidentModel->find($id);
+            $guide_id = $_SESSION['guide']['id'] ?? 0;
+            // Kiểm tra quyền
+            if ($incident && $incident['guide_id'] == $guide_id) {
+                $assignModel = new GuideAssignModel();
+                $myAssigns = $assignModel->getByGuide($guide_id);
+                include "views/hdv/incident_edit.php";
+            } else {
+                $_SESSION['error'] = "Không có quyền truy cập!";
+                header("Location: index.php?act=hdv_data");
+                exit;
+            }
+            break;
+
+        case "hdv_incident_update":
+            require_once "models/GuideIncidentModel.php";
+            require_once "commons/function.php";
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $id = $_POST["id"];
+                $incidentModel = new GuideIncidentModel();
+                $incident = $incidentModel->find($id);
+                $guide_id = $_SESSION['guide']['id'] ?? 0;
+                // Kiểm tra quyền
+                if ($incident && $incident['guide_id'] == $guide_id) {
+                    $photoPath = $incident['photos'] ?? null;
+                    if (!empty($_FILES["photos"]["name"])) {
+                        if ($photoPath) {
+                            deleteFile($photoPath);
+                        }
+                        $photoPath = uploadFile($_FILES["photos"], "uploads/incidents/");
+                    }
+                    $data = [
+                        "departure_id" => $_POST["departure_id"],
+                        "guide_id" => $guide_id,
+                        "incident_type" => $_POST["incident_type"],
+                        "severity" => $_POST["severity"],
+                        "description" => $_POST["description"],
+                        "solution" => $_POST["solution"] ?? '',
+                        "photos" => $photoPath
+                    ];
+                    $incidentModel->updateData($id, $data);
+                    $_SESSION['message'] = "Cập nhật báo cáo sự cố thành công!";
+                } else {
+                    $_SESSION['error'] = "Không có quyền truy cập!";
+                }
+            }
+            header("Location: index.php?act=hdv_data");
+            exit;
+            break;
+
+        case "hdv_incident_delete":
+            require_once "models/GuideIncidentModel.php";
+            require_once "commons/function.php";
+            $id = $_GET["id"] ?? 0;
+            $incidentModel = new GuideIncidentModel();
+            $incident = $incidentModel->find($id);
+            $guide_id = $_SESSION['guide']['id'] ?? 0;
+            // Kiểm tra quyền
+            if ($incident && $incident['guide_id'] == $guide_id) {
+                if ($incident['photos']) {
+                    deleteFile($incident['photos']);
+                }
+                $incidentModel->delete($id);
+                $_SESSION['message'] = "Xóa báo cáo sự cố thành công!";
+            } else {
+                $_SESSION['error'] = "Không có quyền truy cập!";
+            }
+            header("Location: index.php?act=hdv_data");
+            exit;
+            break;
+
         default:
+            require_once "models/hdv_model.php";
+            $guide_id = $_SESSION['guide']['id'] ?? 0;
+            $totalToursToday = getCountToursTodayByGuide($guide_id);
+            $totalTours = getCountToursByGuide($guide_id);
+            $incidentsReported = getCountIncidentsByGuide($guide_id);
+            $journalsCount = getCountLogsByGuide($guide_id);
             include "views/hdv/dashboard.php";
             break;
     }

@@ -3,38 +3,63 @@ require_once "inc/pdo.php"; // kết nối database
 
 // Lấy số tour HDV đã được phân công
 function getCountToursByGuide($guide_id) {
-    global $pdo;
+    require_once __DIR__ . "/../commons/function.php";
     $sql = "SELECT COUNT(*) FROM guide_assign WHERE guide_id = ?";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$guide_id]);
-    return $stmt->fetchColumn();
+    $result = pdo_query_value($sql, $guide_id);
+    return $result ? (int)$result : 0;
 }
 
 // Lấy số nhật ký HDV đã gửi
 function getCountLogsByGuide($guide_id) {
-    global $pdo;
-    $sql = "SELECT COUNT(*) FROM diaries WHERE guide_id = ?";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$guide_id]);
-    return $stmt->fetchColumn();
+    require_once __DIR__ . "/../commons/function.php";
+    $sql = "SELECT COUNT(*) FROM guide_journal WHERE guide_id = ?";
+    $result = pdo_query_value($sql, $guide_id);
+    return $result ? (int)$result : 0;
 }
 
-// Lấy lịch trình của HDV
+// Lấy số sự cố HDV đã báo cáo
+function getCountIncidentsByGuide($guide_id) {
+    require_once __DIR__ . "/../commons/function.php";
+    $sql = "SELECT COUNT(*) FROM guide_incidents WHERE guide_id = ?";
+    $result = pdo_query_value($sql, $guide_id);
+    return $result ? (int)$result : 0;
+}
+
+// Lấy số tour hôm nay
+function getCountToursTodayByGuide($guide_id) {
+    require_once __DIR__ . "/../commons/function.php";
+    $today = date('Y-m-d');
+    $sql = "SELECT COUNT(*) FROM guide_assign ga
+            INNER JOIN departures d ON ga.departure_id = d.id
+            WHERE ga.guide_id = ? AND DATE(d.departure_time) = ?";
+    $result = pdo_query_value($sql, $guide_id, $today);
+    return $result ? (int)$result : 0;
+}
+
+// Lấy lịch trình của HDV (từ guide_assign)
 function getScheduleByGuide($guide_id) {
-    global $pdo;
-    $sql = "SELECT * FROM schedules WHERE guide_id = ?";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$guide_id]);
-    return $stmt->fetchAll();
+    require_once __DIR__ . "/../commons/function.php";
+    $sql = "SELECT 
+                ga.*,
+                t.title AS tour_name,
+                d.departure_time,
+                d.meeting_point,
+                ga.max_people,
+                ga.note,
+                ga.status
+            FROM guide_assign ga
+            INNER JOIN departures d ON ga.departure_id = d.id
+            INNER JOIN tours t ON d.tour_id = t.id
+            WHERE ga.guide_id = ?
+            ORDER BY d.departure_time ASC";
+    return pdo_query($sql, $guide_id);
 }
 
 // Lấy nhật ký của HDV
 function getLogsByGuide($guide_id) {
-    global $pdo;
-    $sql = "SELECT * FROM diaries WHERE guide_id = ?";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$guide_id]);
-    return $stmt->fetchAll();
+    require_once __DIR__ . "/../models/GuideJournalModel.php";
+    $journalModel = new GuideJournalModel();
+    return $journalModel->getByGuide($guide_id);
 }
 // Lấy danh sách tour HDV được phân công
 // Lấy danh sách tour HDV được phân công, bao gồm ngày khởi hành, điểm tập trung, số người tối đa, ghi chú

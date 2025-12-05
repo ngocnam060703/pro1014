@@ -1,10 +1,15 @@
-<?php
-// Giả sử bạn đã session_start() trong index.php
-// Dữ liệu demo
-$totalToursToday = 3;
-$totalBookingsToday = 5;
-$completedTours = 10;
-$incidentsReported = 2;
+<?php 
+if (session_status() == PHP_SESSION_NONE) session_start();
+require_once __DIR__ . "/../../models/hdv_model.php";
+
+$guide_id = $_SESSION['guide']['id'] ?? 0;
+
+// Lấy dữ liệu thực từ database
+$totalToursToday = getCountToursTodayByGuide($guide_id);
+$totalTours = getCountToursByGuide($guide_id);
+$completedTours = 0; // Có thể tính từ status = 'completed'
+$incidentsReported = getCountIncidentsByGuide($guide_id);
+$journalsCount = getCountLogsByGuide($guide_id);
 ?>
 
 <!DOCTYPE html>
@@ -46,7 +51,21 @@ body { background: #f5f6fa; }
   <!-- CONTENT -->
   <div class="col-10 content">
 
-    <h3 class="mb-4">Tổng quan HDV</h3>
+    <h3 class="mb-4">Tổng quan HDV - <?= htmlspecialchars($_SESSION['guide']['fullname'] ?? '') ?></h3>
+    
+    <?php if(isset($_SESSION['message'])): ?>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?= $_SESSION['message']; unset($_SESSION['message']); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <?php endif; ?>
+    
+    <?php if(isset($_SESSION['error'])): ?>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <?php endif; ?>
 
     <div class="row g-3 mb-4">
       <div class="col-md-3">
@@ -58,15 +77,15 @@ body { background: #f5f6fa; }
 
       <div class="col-md-3">
         <div class="card p-3 card-stat bg-success text-white">
-          <h6><i class="bi bi-cart"></i> Booking hôm nay</h6>
-          <h2><?= $totalBookingsToday ?></h2>
+          <h6><i class="bi bi-journal-text"></i> Nhật ký đã gửi</h6>
+          <h2><?= $journalsCount ?></h2>
         </div>
       </div>
 
       <div class="col-md-3">
-        <div class="card p-3 card-stat bg-warning text-dark">
-          <h6><i class="bi bi-check-circle"></i> Tour hoàn thành</h6>
-          <h2><?= $completedTours ?></h2>
+        <div class="card p-3 card-stat bg-info text-white">
+          <h6><i class="bi bi-calendar-check"></i> Tổng tour được giao</h6>
+          <h2><?= $totalTours ?></h2>
         </div>
       </div>
 
@@ -81,5 +100,6 @@ body { background: #f5f6fa; }
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
