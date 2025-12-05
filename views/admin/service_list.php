@@ -71,8 +71,9 @@ body {
     <a href="index.php?act=service" class="active"><i class="bi bi-grid"></i> Quản lý dịch vụ</a>
     <a href="index.php?act=tour"><i class="bi bi-card-list"></i> Quản lý Tour</a>
     <a href="index.php?act=booking"><i class="bi bi-cart"></i> Quản lý Booking</a>
+    <a href="index.php?act=special-request"><i class="bi bi-exclamation-circle"></i> Yêu cầu đặc biệt</a>
     <a href="index.php?act=guide-assign"><i class="bi bi-card-list"></i> Phân công HDV</a>
-      <a href="index.php?act=guide-incident"><i class="bi bi-exclamation-triangle"></i> Danh sách sự cố</a>
+    <a href="index.php?act=guide-incident"><i class="bi bi-exclamation-triangle"></i> Danh sách sự cố</a>
 
     <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')">
       <i class="bi bi-box-arrow-right"></i> Đăng xuất
@@ -93,6 +94,20 @@ body {
         </a>
       </div>
     </div>
+
+    <?php if(isset($_SESSION['message'])): ?>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?= $_SESSION['message']; unset($_SESSION['message']); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <?php endif; ?>
+    
+    <?php if(isset($_SESSION['error'])): ?>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <?php endif; ?>
 
     <div class="card p-3">
       <div class="card-body p-0">
@@ -115,7 +130,7 @@ body {
                 <td><?= $sv['trip_name'] ?? 'Chưa có tour' ?></td>
                 <td><?= $sv['service_name'] ?></td>
                 <td><?= $sv['status'] ?></td>
-                <td><?= $sv['notes'] ?></td>
+                <td><?= htmlspecialchars($sv['notes'] ?? '') ?></td>
                 <td class="text-center d-flex justify-content-center gap-1">
                   <a href="index.php?act=service-edit&id=<?= $sv['id'] ?>" class="btn btn-warning btn-sm">
                     <i class="bi bi-pencil-square"></i>

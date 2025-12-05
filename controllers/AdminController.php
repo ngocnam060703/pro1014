@@ -78,10 +78,20 @@ class AdminController {
     // DASHBOARD
     // -----------------------------
     public function dashboard() {
+        require_once "models/BookingModel.php";
+        $bookingModel = new BookingModel();
+        
         $totalTours = count($this->tourModel->getAllTours());
-        $ordersToday = $this->orderModel->getOrdersCountToday();
-        $revenueToday = $this->orderModel->getRevenueToday();
+        // Sử dụng BookingModel thay vì OrderModel
+        $ordersToday = $bookingModel->getOrdersCountToday();
+        $revenueToday = $bookingModel->getRevenueToday();
         $totalUsers = count($this->userModel->getAllUsers());
+        
+        // Lấy dữ liệu cho biểu đồ (đảm bảo luôn có mảng)
+        $revenueData = $bookingModel->getRevenueLast7Days() ?: [];
+        $ordersData = $bookingModel->getOrdersCountLast7Days() ?: [];
+        $topTours = $bookingModel->getTopTours(5) ?: [];
+        $statusDistribution = $bookingModel->getBookingStatusDistribution() ?: [];
 
         include "views/admin/dashboard.php";
     }

@@ -1,0 +1,214 @@
+<?php
+/**
+ * Script cài đặt bảng database cho hệ thống HDV
+ * Truy cập: http://localhost/pro1014/install_tables.php
+ */
+
+require_once __DIR__ . '/commons/env.php';
+require_once __DIR__ . '/commons/function.php';
+
+?>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cài đặt Database - HDV System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">Cài đặt Database - Hệ thống HDV</h3>
+                    </div>
+                    <div class="card-body">
+                        <?php
+                        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
+                            try {
+                                $conn = pdo_get_connection();
+                                $messages = [];
+                                
+                                // Tạo bảng guide_journal
+                                $sql_guide_journal = "CREATE TABLE IF NOT EXISTS `guide_journal` (
+                                    `id` int(11) NOT NULL AUTO_INCREMENT,
+                                    `guide_id` int(11) NOT NULL,
+                                    `departure_id` int(11) NOT NULL,
+                                    `note` text DEFAULT NULL,
+                                    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                    PRIMARY KEY (`id`),
+                                    KEY `guide_id` (`guide_id`),
+                                    KEY `departure_id` (`departure_id`)
+                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+                                
+                                $conn->exec($sql_guide_journal);
+                                $messages[] = ['success', '✓ Bảng guide_journal đã được tạo thành công!'];
+                                
+                                // Tạo bảng guide_incidents
+                                $sql_guide_incidents = "CREATE TABLE IF NOT EXISTS `guide_incidents` (
+                                    `id` int(11) NOT NULL AUTO_INCREMENT,
+                                    `guide_id` int(11) NOT NULL,
+                                    `departure_id` int(11) NOT NULL,
+                                    `incident_type` varchar(100) DEFAULT NULL,
+                                    `severity` enum('low','medium','high') DEFAULT 'low',
+                                    `description` text DEFAULT NULL,
+                                    `solution` text DEFAULT NULL,
+                                    `photos` varchar(255) DEFAULT NULL,
+                                    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                    PRIMARY KEY (`id`),
+                                    KEY `guide_id` (`guide_id`),
+                                    KEY `departure_id` (`departure_id`)
+                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+                                
+                                $conn->exec($sql_guide_incidents);
+                                $messages[] = ['success', '✓ Bảng guide_incidents đã được tạo thành công!'];
+                                
+                                // Tạo bảng guide_assign
+                                $sql_guide_assign = "CREATE TABLE IF NOT EXISTS `guide_assign` (
+                                    `id` int(11) NOT NULL AUTO_INCREMENT,
+                                    `guide_id` int(11) NOT NULL,
+                                    `departure_id` int(11) NOT NULL,
+                                    `tour_id` int(11) DEFAULT NULL,
+                                    `departure_date` date DEFAULT NULL,
+                                    `meeting_point` varchar(255) DEFAULT NULL,
+                                    `max_people` int(11) DEFAULT NULL,
+                                    `note` text DEFAULT NULL,
+                                    `status` enum('scheduled','in_progress','completed','pending') DEFAULT 'scheduled',
+                                    `assigned_at` timestamp NULL DEFAULT NULL,
+                                    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    PRIMARY KEY (`id`),
+                                    KEY `guide_id` (`guide_id`),
+                                    KEY `departure_id` (`departure_id`),
+                                    KEY `tour_id` (`tour_id`)
+                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+                                
+                                $conn->exec($sql_guide_assign);
+                                $messages[] = ['success', '✓ Bảng guide_assign đã được kiểm tra/tạo thành công!'];
+                                
+                                // Tạo bảng tour_itinerary_detail
+                                $sql_tour_itinerary = "CREATE TABLE IF NOT EXISTS `tour_itinerary_detail` (
+                                    `id` int(11) NOT NULL AUTO_INCREMENT,
+                                    `tour_id` int(11) NOT NULL,
+                                    `day_number` int(11) NOT NULL,
+                                    `title` varchar(255) DEFAULT NULL,
+                                    `description` text DEFAULT NULL,
+                                    `activities` text DEFAULT NULL,
+                                    `meals` varchar(255) DEFAULT NULL,
+                                    `accommodation` varchar(255) DEFAULT NULL,
+                                    `notes` text DEFAULT NULL,
+                                    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    PRIMARY KEY (`id`),
+                                    KEY `tour_id` (`tour_id`)
+                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+                                
+                                $conn->exec($sql_tour_itinerary);
+                                $messages[] = ['success', '✓ Bảng tour_itinerary_detail đã được tạo thành công!'];
+                                
+                                // Tạo các bảng khác từ create_guide_features.sql
+                                $sql_checkin = "CREATE TABLE IF NOT EXISTS `guide_checkin` (
+                                    `id` int(11) NOT NULL AUTO_INCREMENT,
+                                    `guide_id` int(11) NOT NULL,
+                                    `departure_id` int(11) NOT NULL,
+                                    `booking_id` int(11) NOT NULL,
+                                    `checkin_time` datetime DEFAULT NULL,
+                                    `checkin_location` varchar(255) DEFAULT NULL,
+                                    `status` enum('checked_in','absent','late') DEFAULT 'checked_in',
+                                    `notes` text DEFAULT NULL,
+                                    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    PRIMARY KEY (`id`),
+                                    KEY `guide_id` (`guide_id`),
+                                    KEY `departure_id` (`departure_id`),
+                                    KEY `booking_id` (`booking_id`)
+                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+                                
+                                $conn->exec($sql_checkin);
+                                $messages[] = ['success', '✓ Bảng guide_checkin đã được tạo thành công!'];
+                                
+                                $sql_special_requests = "CREATE TABLE IF NOT EXISTS `customer_special_requests` (
+                                    `id` int(11) NOT NULL AUTO_INCREMENT,
+                                    `booking_id` int(11) NOT NULL,
+                                    `request_type` varchar(100) DEFAULT NULL,
+                                    `description` text DEFAULT NULL,
+                                    `status` enum('pending','confirmed','completed') DEFAULT 'pending',
+                                    `notes` text DEFAULT NULL,
+                                    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                    PRIMARY KEY (`id`),
+                                    KEY `booking_id` (`booking_id`)
+                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+                                
+                                $conn->exec($sql_special_requests);
+                                $messages[] = ['success', '✓ Bảng customer_special_requests đã được tạo thành công!'];
+                                
+                                $sql_feedback = "CREATE TABLE IF NOT EXISTS `guide_feedback` (
+                                    `id` int(11) NOT NULL AUTO_INCREMENT,
+                                    `guide_id` int(11) NOT NULL,
+                                    `departure_id` int(11) NOT NULL,
+                                    `feedback_type` varchar(50) DEFAULT NULL,
+                                    `provider_name` varchar(255) DEFAULT NULL,
+                                    `rating` int(1) DEFAULT NULL,
+                                    `comment` text DEFAULT NULL,
+                                    `suggestions` text DEFAULT NULL,
+                                    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                    PRIMARY KEY (`id`),
+                                    KEY `guide_id` (`guide_id`),
+                                    KEY `departure_id` (`departure_id`)
+                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+                                
+                                $conn->exec($sql_feedback);
+                                $messages[] = ['success', '✓ Bảng guide_feedback đã được tạo thành công!'];
+                                
+                                // Cập nhật bảng guide_journal để thêm các trường mới
+                                try {
+                                    $conn->exec("ALTER TABLE `guide_journal` ADD COLUMN IF NOT EXISTS `day_number` int(11) DEFAULT NULL");
+                                    $conn->exec("ALTER TABLE `guide_journal` ADD COLUMN IF NOT EXISTS `activities` text DEFAULT NULL");
+                                    $conn->exec("ALTER TABLE `guide_journal` ADD COLUMN IF NOT EXISTS `photos` text DEFAULT NULL");
+                                    $conn->exec("ALTER TABLE `guide_journal` ADD COLUMN IF NOT EXISTS `customer_feedback` text DEFAULT NULL");
+                                    $conn->exec("ALTER TABLE `guide_journal` ADD COLUMN IF NOT EXISTS `weather` varchar(100) DEFAULT NULL");
+                                    $conn->exec("ALTER TABLE `guide_journal` ADD COLUMN IF NOT EXISTS `mood` varchar(50) DEFAULT NULL");
+                                    $messages[] = ['success', '✓ Đã cập nhật bảng guide_journal với các trường mới!'];
+                                } catch (PDOException $e) {
+                                    // Bỏ qua nếu cột đã tồn tại
+                                }
+                                
+                                foreach ($messages as $msg) {
+                                    echo '<div class="alert alert-' . $msg[0] . '">' . htmlspecialchars($msg[1]) . '</div>';
+                                }
+                                
+                                echo '<div class="alert alert-success mt-3"><strong>✅ Hoàn thành!</strong> Tất cả các bảng đã sẵn sàng. Bạn có thể <a href="index.php?act=hdv_login">đăng nhập HDV</a> ngay bây giờ.</div>';
+                                
+                            } catch (PDOException $e) {
+                                echo '<div class="alert alert-danger">❌ Lỗi: ' . htmlspecialchars($e->getMessage()) . '</div>';
+                            }
+                        } else {
+                            ?>
+                            <p class="lead">Script này sẽ tạo các bảng cần thiết cho hệ thống HDV:</p>
+                            <ul>
+                                <li><code>guide_journal</code> - Lưu nhật ký của hướng dẫn viên</li>
+                                <li><code>guide_incidents</code> - Lưu báo cáo sự cố</li>
+                                <li><code>guide_assign</code> - Lưu phân công tour cho HDV</li>
+                                <li><code>tour_itinerary_detail</code> - Lịch trình chi tiết từng ngày</li>
+                                <li><code>guide_checkin</code> - Check-in/điểm danh khách</li>
+                                <li><code>customer_special_requests</code> - Yêu cầu đặc biệt của khách</li>
+                                <li><code>guide_feedback</code> - Phản hồi đánh giá của HDV</li>
+                            </ul>
+                            <form method="POST">
+                                <button type="submit" name="install" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-database"></i> Cài đặt ngay
+                                </button>
+                            </form>
+                            <?php
+                        }
+                        ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

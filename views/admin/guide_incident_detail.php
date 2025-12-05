@@ -55,6 +55,7 @@ if (session_status() == PHP_SESSION_NONE) session_start();
         <a href="index.php?act=service"><i class="bi bi-grid"></i> Quản lý dịch vụ</a>
         <a href="index.php?act=tour"><i class="bi bi-card-list"></i> Quản lý Tour</a>
         <a href="index.php?act=booking"><i class="bi bi-cart"></i> Quản lý Booking</a>
+        <a href="index.php?act=special-request"><i class="bi bi-exclamation-circle"></i> Yêu cầu đặc biệt</a>
 
         <a href="index.php?act=guide-incident" class="active">
             <i class="bi bi-exclamation-triangle"></i> Danh sách sự cố
@@ -106,7 +107,23 @@ if (session_status() == PHP_SESSION_NONE) session_start();
             <!-- Mức độ -->
             <div class="mb-3">
                 <label class="form-label fw-semibold">Mức độ</label>
-                <input type="text" class="form-control" value="<?= $incident['severity'] ?>" readonly>
+                <?php
+                  $severity = $incident['severity'] ?? 'low';
+                  $badgeClass = [
+                    'low' => 'badge bg-info',
+                    'medium' => 'badge bg-warning',
+                    'high' => 'badge bg-danger'
+                  ];
+                  $badge = $badgeClass[$severity] ?? 'badge bg-secondary';
+                  $severityText = [
+                    'low' => 'Thấp',
+                    'medium' => 'Trung bình',
+                    'high' => 'Cao'
+                  ];
+                ?>
+                <div>
+                  <span class="<?= $badge ?> fs-6"><?= $severityText[$severity] ?? ucfirst($severity) ?></span>
+                </div>
             </div>
 
             <!-- Mô tả -->

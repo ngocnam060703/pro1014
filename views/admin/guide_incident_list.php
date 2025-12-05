@@ -70,6 +70,7 @@ body {
     <a href="index.php?act=service"><i class="bi bi-grid"></i> Quản lý dịch vụ</a>
     <a href="index.php?act=tour"><i class="bi bi-card-list"></i> Quản lý Tour</a>
     <a href="index.php?act=booking"><i class="bi bi-cart"></i> Quản lý Booking</a>
+    <a href="index.php?act=special-request"><i class="bi bi-exclamation-circle"></i> Yêu cầu đặc biệt</a>
     <a href="index.php?act=guide-assign"><i class="bi bi-card-list"></i> Phân công HDV</a>
     <a href="index.php?act=guide-incident" class="active">
       <i class="bi bi-exclamation-triangle"></i> Danh sách sự cố
@@ -125,7 +126,23 @@ body {
               <td class="fw-semibold text-primary"><?= $i['guide_name'] ?></td>
               <td><?= $i['departure_name'] ?></td>
               <td><?= $i['incident_type'] ?></td>
-              <td class="fw-bold text-danger"><?= $i['severity'] ?></td>
+              <td>
+                <?php
+                  $severity = $i['severity'] ?? 'low';
+                  $badgeClass = [
+                    'low' => 'badge bg-info',
+                    'medium' => 'badge bg-warning',
+                    'high' => 'badge bg-danger'
+                  ];
+                  $badge = $badgeClass[$severity] ?? 'badge bg-secondary';
+                  $severityText = [
+                    'low' => 'Thấp',
+                    'medium' => 'Trung bình',
+                    'high' => 'Cao'
+                  ];
+                  echo '<span class="' . $badge . '">' . ($severityText[$severity] ?? ucfirst($severity)) . '</span>';
+                ?>
+              </td>
               <td><?= $i['description'] ?></td>
               <td><?= $i['solution'] ?></td>
 

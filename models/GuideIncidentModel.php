@@ -109,4 +109,21 @@ class GuideIncidentModel {
         $sql = "DELETE FROM guide_incidents WHERE id=?";
         return pdo_execute($sql, $id);
     }
+
+    // ==========================
+    // Lấy sự cố theo guide_id
+    // ==========================
+    public function getByGuide($guide_id) {
+        $sql = "SELECT 
+                    gi.*, 
+                    t.title AS tour_name,
+                    d.departure_time,
+                    CONCAT(t.title, ' - ', d.departure_time) AS departure_name
+                FROM guide_incidents gi
+                LEFT JOIN departures d ON gi.departure_id = d.id
+                LEFT JOIN tours t ON d.tour_id = t.id
+                WHERE gi.guide_id = ?
+                ORDER BY gi.created_at DESC";
+        return pdo_query($sql, $guide_id);
+    }
 }

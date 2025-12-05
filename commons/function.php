@@ -1,4 +1,8 @@
 <?php
+// Load environment config if not already loaded
+if (!defined('PATH_ROOT')) {
+    require_once __DIR__ . '/env.php';
+}
 
 // -------------------------------
 // KẾT NỐI DATABASE
@@ -58,16 +62,34 @@ function pdo_query_one($sql, ...$params) {
     return $stmt->fetch();
 }
 
+// Truy vấn SELECT trả về 1 giá trị (1 cột)
+function pdo_query_value($sql, ...$params) {
+    $conn = pdo_get_connection();
+    $stmt = $conn->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchColumn();
+}
+
 
 // -------------------------------
 // UPLOAD FILE
 // -------------------------------
 function uploadFile($file, $folderSave) {
+    if (!isset($file['tmp_name']) || empty($file['tmp_name'])) {
+        return null;
+    }
+    
     $file_upload = $file;
-    $pathStorage = $folderSave . rand(10000, 99999) . $file_upload['name'];
+    $pathStorage = $folderSave . rand(10000, 99999) . '_' . $file_upload['name'];
 
     $tmp_file = $file_upload['tmp_name'];
     $pathSave = PATH_ROOT . $pathStorage;
+    
+    // Tạo thư mục nếu chưa tồn tại
+    $dir = dirname($pathSave);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
 
     if (move_uploaded_file($tmp_file, $pathSave)) {
         return $pathStorage;

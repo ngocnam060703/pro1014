@@ -89,9 +89,10 @@ body {
         <div class="mb-3">
           <label class="form-label">Chuyến đi</label>
           <select name="trip_id" class="form-select" required>
+            <option value="">-- Chọn tour --</option>
             <?php foreach($trips as $t): ?>
-              <option value="<?= $t['id'] ?>" <?= (isset($service) && $service['trip_id']==$t['id'])?'selected':'' ?>>
-                <?= $t['title'] ?>
+              <option value="<?= $t['id'] ?>" <?= (isset($service) && ($service['trip'] ?? $service['trip_id'] ?? null)==$t['id'])?'selected':'' ?>>
+                <?= htmlspecialchars($t['title']) ?>
               </option>
             <?php endforeach; ?>
           </select>
@@ -113,7 +114,7 @@ body {
 
         <div class="mb-3">
           <label class="form-label">Ghi chú</label>
-          <textarea name="notes" class="form-control" rows="3"><?= $service['notes'] ?? '' ?></textarea>
+          <textarea name="notes" class="form-control" rows="3"><?= htmlspecialchars($service['note'] ?? $service['notes'] ?? '') ?></textarea>
         </div>
 
         <button type="submit" class="btn btn-success me-2">
