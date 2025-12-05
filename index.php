@@ -14,6 +14,7 @@ require_once "controllers/ServiceController.php";
 require_once "controllers/AdminBookingController.php";
 require_once "controllers/GuideAuthController.php";
 require_once "controllers/GuideIncidentController.php";
+require_once "controllers/SpecialRequestController.php";
 
 // =====================
 // MAKE CONTROLLER INSTANCE
@@ -28,6 +29,7 @@ $serviceController       = new ServiceController();
 $adminBookingController  = new AdminBookingController();
 $guideAuth               = new GuideAuthController();
 $guideIncidentController = new GuideIncidentController();
+$specialRequestController = new SpecialRequestController();
 
 // =====================
 // GET ACTION
@@ -574,6 +576,35 @@ switch ($act) {
 
     case "service-delete":
         $serviceController->delete();
+        break;
+
+    // SPECIAL REQUEST
+    case "special-request":
+        $specialRequestController->index();
+        break;
+
+    case "special-request-create":
+        $specialRequestController->create();
+        break;
+
+    case "special-request-store":
+        $specialRequestController->store();
+        break;
+
+    case "special-request-edit":
+        $specialRequestController->edit();
+        break;
+
+    case "special-request-update":
+        $specialRequestController->update();
+        break;
+
+    case "special-request-delete":
+        $specialRequestController->delete();
+        break;
+
+    case "special-request-update-status":
+        $specialRequestController->updateStatus();
         break;
 
     // GUIDE

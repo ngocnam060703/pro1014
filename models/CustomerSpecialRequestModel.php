@@ -16,11 +16,13 @@ class CustomerSpecialRequestModel {
         $sql = "SELECT 
                     csr.*,
                     b.customer_name,
-                    b.customer_phone
+                    b.customer_phone,
+                    b.customer_email
                 FROM customer_special_requests csr
                 INNER JOIN bookings b ON csr.booking_id = b.id
-                WHERE b.departure_id = ?
-                ORDER BY csr.created_at DESC";
+                INNER JOIN departures d ON b.tour_id = d.tour_id
+                WHERE d.id = ?
+                ORDER BY csr.status ASC, csr.created_at DESC";
         return pdo_query($sql, $departure_id);
     }
     
@@ -58,6 +60,81 @@ class CustomerSpecialRequestModel {
     public function delete($id) {
         $sql = "DELETE FROM customer_special_requests WHERE id = ?";
         return pdo_execute($sql, $id);
+    }
+    
+    // Lấy tất cả yêu cầu đặc biệt với thông tin đầy đủ
+    public function getAllWithDetails() {
+        $sql = "SELECT 
+                    csr.*,
+                    b.customer_name,
+                    b.customer_phone,
+                    b.customer_email,
+                    b.tour_id,
+                    t.title AS tour_title,
+                    d.departure_time,
+                    d.id AS departure_id
+                FROM customer_special_requests csr
+                INNER JOIN bookings b ON csr.booking_id = b.id
+                LEFT JOIN tours t ON b.tour_id = t.id
+                LEFT JOIN departures d ON b.tour_id = d.tour_id
+                ORDER BY csr.created_at DESC";
+        return pdo_query($sql);
+    }
+    
+    // Lấy yêu cầu đặc biệt theo tour
+    public function getByTour($tour_id) {
+        $sql = "SELECT 
+                    csr.*,
+                    b.customer_name,
+                    b.customer_phone,
+                    b.customer_email
+                FROM customer_special_requests csr
+                INNER JOIN bookings b ON csr.booking_id = b.id
+                WHERE b.tour_id = ?
+                ORDER BY csr.status ASC, csr.created_at DESC";
+        return pdo_query($sql, $tour_id);
+    }
+    
+    // Lấy số lượng yêu cầu đang chờ xử lý
+    public function getPendingCount($departure_id = null) {
+        if ($departure_id) {
+            $sql = "SELECT COUNT(*) as count
+                    FROM customer_special_requests csr
+                    INNER JOIN bookings b ON csr.booking_id = b.id
+                    INNER JOIN departures d ON b.tour_id = d.tour_id
+                    WHERE csr.status = 'pending' AND d.id = ?";
+            $result = pdo_query_one($sql, $departure_id);
+        } else {
+            $sql = "SELECT COUNT(*) as count
+                    FROM customer_special_requests
+                    WHERE status = 'pending'";
+            $result = pdo_query_one($sql);
+        }
+        return $result['count'] ?? 0;
+    }
+    
+    // Lấy yêu cầu đặc biệt theo ID
+    public function find($id) {
+        $sql = "SELECT 
+                    csr.*,
+                    b.customer_name,
+                    b.customer_phone,
+                    b.customer_email,
+                    b.tour_id,
+                    t.title AS tour_title
+                FROM customer_special_requests csr
+                INNER JOIN bookings b ON csr.booking_id = b.id
+                LEFT JOIN tours t ON b.tour_id = t.id
+                WHERE csr.id = ?";
+        return pdo_query_one($sql, $id);
+    }
+    
+    // Cập nhật trạng thái
+    public function updateStatus($id, $status, $notes = null) {
+        $sql = "UPDATE customer_special_requests 
+                SET status = ?, notes = ?
+                WHERE id = ?";
+        return pdo_execute($sql, $status, $notes, $id);
     }
 }
 

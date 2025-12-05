@@ -1,9 +1,23 @@
 <?php 
 if (session_status() == PHP_SESSION_NONE) session_start();
 require_once __DIR__ . "/../../models/hdv_model.php";
+require_once __DIR__ . "/../../models/CustomerSpecialRequestModel.php";
 
 $guide_id = $_SESSION['guide']['id'] ?? 0;
 $schedules = getScheduleByGuide($guide_id);
+
+// Lấy số lượng yêu cầu đặc biệt cho mỗi tour
+$requestModel = new CustomerSpecialRequestModel();
+foreach ($schedules as &$sch) {
+    if (isset($sch['departure_id'])) {
+        $sch['special_requests_count'] = count($requestModel->getByDeparture($sch['departure_id']));
+        $sch['pending_requests_count'] = $requestModel->getPendingCount($sch['departure_id']);
+    } else {
+        $sch['special_requests_count'] = 0;
+        $sch['pending_requests_count'] = 0;
+    }
+}
+unset($sch);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -67,6 +81,15 @@ body { background:#f5f6fa; font-family: 'Segoe UI', sans-serif; }
                 <a href="index.php?act=hdv_schedule_detail&departure_id=<?= $sch['departure_id'] ?>" class="text-primary fw-bold">
                   <?= htmlspecialchars($sch['tour_name'] ?? 'Chưa có') ?>
                 </a>
+                <?php if(isset($sch['special_requests_count']) && $sch['special_requests_count'] > 0): ?>
+                  <br><small class="text-warning">
+                    <i class="bi bi-exclamation-circle"></i> 
+                    <?= $sch['special_requests_count'] ?> yêu cầu đặc biệt
+                    <?php if($sch['pending_requests_count'] > 0): ?>
+                      (<strong><?= $sch['pending_requests_count'] ?></strong> chờ xử lý)
+                    <?php endif; ?>
+                  </small>
+                <?php endif; ?>
               </td>
               <td><?= date('d/m/Y H:i', strtotime($sch['departure_time'] ?? '')) ?></td>
               <td><?= htmlspecialchars($sch['meeting_point'] ?? $sch['meeting_point'] ?? '') ?></td>

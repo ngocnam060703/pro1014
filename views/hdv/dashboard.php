@@ -1,6 +1,8 @@
 <?php 
 if (session_status() == PHP_SESSION_NONE) session_start();
 require_once __DIR__ . "/../../models/hdv_model.php";
+require_once __DIR__ . "/../../models/CustomerSpecialRequestModel.php";
+require_once __DIR__ . "/../../models/GuideAssignModel.php";
 
 $guide_id = $_SESSION['guide']['id'] ?? 0;
 
@@ -10,6 +12,17 @@ $totalTours = getCountToursByGuide($guide_id);
 $completedTours = 0; // Có thể tính từ status = 'completed'
 $incidentsReported = getCountIncidentsByGuide($guide_id);
 $journalsCount = getCountLogsByGuide($guide_id);
+
+// Lấy số lượng yêu cầu đặc biệt đang chờ xử lý
+$requestModel = new CustomerSpecialRequestModel();
+$assignModel = new GuideAssignModel();
+$myAssigns = $assignModel->getByGuide($guide_id);
+$pendingRequestsCount = 0;
+foreach ($myAssigns as $assign) {
+    if (isset($assign['departure_id'])) {
+        $pendingRequestsCount += $requestModel->getPendingCount($assign['departure_id']);
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -97,6 +110,14 @@ body { background: #f5f6fa; }
         </div>
       </div>
     </div>
+
+    <?php if($pendingRequestsCount > 0): ?>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      <h5><i class="bi bi-exclamation-circle"></i> Cảnh báo: Có <?= $pendingRequestsCount ?> yêu cầu đặc biệt đang chờ xử lý!</h5>
+      <p class="mb-0">Vui lòng kiểm tra và xử lý các yêu cầu đặc biệt của khách hàng trong các tour được phân công.</p>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <?php endif; ?>
 
   </div>
 </div>

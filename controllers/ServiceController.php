@@ -23,13 +23,33 @@ class ServiceController {
     }
 
     public function store() {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        $trip_id = $_POST["trip_id"] ?? $_POST["trip"] ?? null;
+        $service_name = trim($_POST["service_name"] ?? "");
+        
+        if (empty($trip_id) || empty($service_name)) {
+            $_SESSION['error'] = "Vui lòng điền đầy đủ thông tin!";
+            header("Location: index.php?act=service-create");
+            exit();
+        }
+        
         $data = [
-            "trip" => $_POST["trip"],
-            "service_name" => $_POST["service_name"],
-            "status" => $_POST["status"],
-            "note" => $_POST["note"]
+            "trip" => $trip_id,
+            "service_name" => $service_name,
+            "status" => $_POST["status"] ?? "Hoạt động",
+            "note" => trim($_POST["notes"] ?? $_POST["note"] ?? "")
         ];
-        $this->serviceModel->insert($data);
+        
+        try {
+            $this->serviceModel->insert($data);
+            $_SESSION['message'] = "Thêm dịch vụ thành công!";
+        } catch (Exception $e) {
+            $_SESSION['error'] = "Có lỗi xảy ra: " . $e->getMessage();
+        }
+        
         header("Location: index.php?act=service");
         exit();
     }
@@ -42,21 +62,63 @@ class ServiceController {
     }
 
     public function update() {
-        $id = $_POST["id"];
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        $id = $_POST["id"] ?? null;
+        if (!$id) {
+            $_SESSION['error'] = "Không tìm thấy dịch vụ!";
+            header("Location: index.php?act=service");
+            exit();
+        }
+        
+        $trip_id = $_POST["trip_id"] ?? $_POST["trip"] ?? null;
+        $service_name = trim($_POST["service_name"] ?? "");
+        
+        if (empty($trip_id) || empty($service_name)) {
+            $_SESSION['error'] = "Vui lòng điền đầy đủ thông tin!";
+            header("Location: index.php?act=service-edit&id=" . $id);
+            exit();
+        }
+        
         $data = [
-            "trip" => $_POST["trip"],
-            "service_name" => $_POST["service_name"],
-            "status" => $_POST["status"],
-            "note" => $_POST["note"]
+            "trip" => $trip_id,
+            "service_name" => $service_name,
+            "status" => $_POST["status"] ?? "Hoạt động",
+            "note" => trim($_POST["notes"] ?? $_POST["note"] ?? "")
         ];
-        $this->serviceModel->update($id, $data);
+        
+        try {
+            $this->serviceModel->update($id, $data);
+            $_SESSION['message'] = "Cập nhật dịch vụ thành công!";
+        } catch (Exception $e) {
+            $_SESSION['error'] = "Có lỗi xảy ra: " . $e->getMessage();
+        }
+        
         header("Location: index.php?act=service");
         exit();
     }
 
     public function delete() {
-        $id = $_GET["id"];
-        $this->serviceModel->delete($id);
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        $id = $_GET["id"] ?? null;
+        if (!$id) {
+            $_SESSION['error'] = "Không tìm thấy dịch vụ!";
+            header("Location: index.php?act=service");
+            exit();
+        }
+        
+        try {
+            $this->serviceModel->delete($id);
+            $_SESSION['message'] = "Xóa dịch vụ thành công!";
+        } catch (Exception $e) {
+            $_SESSION['error'] = "Có lỗi xảy ra: " . $e->getMessage();
+        }
+        
         header("Location: index.php?act=service");
         exit();
     }

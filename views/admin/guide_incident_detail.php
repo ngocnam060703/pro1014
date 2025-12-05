@@ -55,6 +55,7 @@ if (session_status() == PHP_SESSION_NONE) session_start();
         <a href="index.php?act=service"><i class="bi bi-grid"></i> Quản lý dịch vụ</a>
         <a href="index.php?act=tour"><i class="bi bi-card-list"></i> Quản lý Tour</a>
         <a href="index.php?act=booking"><i class="bi bi-cart"></i> Quản lý Booking</a>
+        <a href="index.php?act=special-request"><i class="bi bi-exclamation-circle"></i> Yêu cầu đặc biệt</a>
 
         <a href="index.php?act=guide-incident" class="active">
             <i class="bi bi-exclamation-triangle"></i> Danh sách sự cố

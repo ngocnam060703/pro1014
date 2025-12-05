@@ -86,9 +86,10 @@ body {
         <div class="mb-3">
           <label class="form-label">Chuyến đi</label>
           <select name="trip_id" class="form-select" required>
+            <option value="">-- Chọn tour --</option>
             <?php foreach($trips as $t): ?>
-              <option value="<?= $t['id'] ?>" <?= ($service['trip']==$t['id'])?'selected':'' ?>>
-                <?= $t['title'] ?>
+              <option value="<?= $t['id'] ?>" <?= (($service['trip'] ?? null)==$t['id'])?'selected':'' ?>>
+                <?= htmlspecialchars($t['title']) ?>
               </option>
             <?php endforeach; ?>
           </select>

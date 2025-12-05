@@ -8,7 +8,7 @@ if (session_status() == PHP_SESSION_NONE) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?= isset($service) ? 'Sửa dịch vụ' : 'Thêm dịch vụ' ?></title>
+<title>Thêm yêu cầu đặc biệt</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 <style>
@@ -40,95 +40,101 @@ body {
     background:#495057;
     border-left:3px solid #0d6efd;
 }
-
 .content { padding: 30px; }
 .card {
     border-radius: 18px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
-.btn-primary, .btn-success, .btn-secondary {
-    border-radius: 50px;
-}
 </style>
 </head>
 <body>
 <div class="row g-0">
-
-  <!-- SIDEBAR -->
   <div class="col-2 sidebar">
     <h4 class="text-center mb-4">ADMIN</h4>
     <a href="index.php?act=dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <a href="index.php?act=account"><i class="bi bi-people"></i> Quản lý tài khoản</a>
     <a href="index.php?act=guide"><i class="bi bi-person-badge"></i> Quản lý nhân viên</a>
     <a href="index.php?act=schedule"><i class="bi bi-calendar-event"></i> Quản lý lịch trình</a>
-    <a href="index.php?act=service" class="active"><i class="bi bi-grid"></i> Quản lý dịch vụ</a>
+    <a href="index.php?act=service"><i class="bi bi-grid"></i> Quản lý dịch vụ</a>
     <a href="index.php?act=tour"><i class="bi bi-card-list"></i> Quản lý Tour</a>
+    <a href="index.php?act=booking"><i class="bi bi-cart"></i> Quản lý Booking</a>
+    <a href="index.php?act=special-request" class="active"><i class="bi bi-exclamation-circle"></i> Yêu cầu đặc biệt</a>
     <a href="index.php?act=guide-assign"><i class="bi bi-card-list"></i> Phân công HDV</a>
+    <a href="index.php?act=guide-incident"><i class="bi bi-exclamation-triangle"></i> Danh sách sự cố</a>
     <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')">
       <i class="bi bi-box-arrow-right"></i> Đăng xuất
     </a>
   </div>
 
-  <!-- CONTENT -->
   <div class="col-10 content">
     <div class="d-flex justify-content-between mb-4">
       <h3 class="fw-bold text-primary">
-        <i class="bi bi-plus-circle"></i> <?= isset($service) ? 'Sửa dịch vụ' : 'Thêm dịch vụ' ?>
+        <i class="bi bi-plus-circle"></i> Thêm yêu cầu đặc biệt
       </h3>
-      <a href="index.php?act=service" class="btn btn-secondary">
+      <a href="index.php?act=special-request" class="btn btn-secondary">
         <i class="bi bi-arrow-left-circle"></i> Quay lại danh sách
       </a>
     </div>
 
     <div class="card p-4">
-      <form action="index.php?act=<?= isset($service) ? 'service-update' : 'service-store' ?>" method="POST">
-        <?php if(isset($service)): ?>
-            <input type="hidden" name="id" value="<?= $service['id'] ?>">
-        <?php endif; ?>
-
+      <form action="index.php?act=special-request-store" method="POST">
         <div class="mb-3">
-          <label class="form-label">Chuyến đi</label>
-          <select name="trip_id" class="form-select" required>
-            <option value="">-- Chọn tour --</option>
-            <?php foreach($trips as $t): ?>
-              <option value="<?= $t['id'] ?>" <?= (isset($service) && ($service['trip'] ?? $service['trip_id'] ?? null)==$t['id'])?'selected':'' ?>>
-                <?= htmlspecialchars($t['title']) ?>
+          <label class="form-label">Chọn booking</label>
+          <select name="booking_id" class="form-select" required>
+            <option value="">-- Chọn booking --</option>
+            <?php foreach($bookings as $booking): ?>
+              <option value="<?= $booking['id'] ?>">
+                <?= htmlspecialchars($booking['customer_name']) ?> - 
+                <?= htmlspecialchars($booking['tour_title'] ?? 'N/A') ?> - 
+                <?= date('d/m/Y', strtotime($booking['created_at'] ?? '')) ?>
               </option>
             <?php endforeach; ?>
           </select>
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Tên dịch vụ</label>
-          <input type="text" name="service_name" class="form-control" value="<?= $service['service_name'] ?? '' ?>" required>
+          <label class="form-label">Loại yêu cầu</label>
+          <select name="request_type" class="form-select" required>
+            <option value="">-- Chọn loại --</option>
+            <option value="diet">Ăn uống (ăn chay, kiêng, dị ứng...)</option>
+            <option value="medical">Y tế (bệnh lý, thuốc, điều kiện sức khỏe...)</option>
+            <option value="accessibility">Khả năng tiếp cận (xe lăn, hỗ trợ di chuyển...)</option>
+            <option value="other">Khác (phòng nghỉ, yêu cầu đặc biệt khác...)</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Mô tả chi tiết</label>
+          <textarea name="description" class="form-control" rows="5" required 
+                    placeholder="Mô tả chi tiết yêu cầu đặc biệt của khách hàng..."></textarea>
         </div>
 
         <div class="mb-3">
           <label class="form-label">Trạng thái</label>
           <select name="status" class="form-select">
-            <option value="Hoạt động" <?= (isset($service) && $service['status']=='Hoạt động')?'selected':'' ?>>Hoạt động</option>
-            <option value="Tạm ngưng" <?= (isset($service) && $service['status']=='Tạm ngưng')?'selected':'' ?>>Tạm ngưng</option>
-            <option value="Ngừng hoạt động" <?= (isset($service) && $service['status']=='Ngừng hoạt động')?'selected':'' ?>>Ngừng hoạt động</option>
+            <option value="pending">Chờ xử lý</option>
+            <option value="confirmed">Đã xác nhận</option>
+            <option value="completed">Hoàn thành</option>
           </select>
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Ghi chú</label>
-          <textarea name="notes" class="form-control" rows="3"><?= htmlspecialchars($service['note'] ?? $service['notes'] ?? '') ?></textarea>
+          <label class="form-label">Ghi chú nội bộ</label>
+          <textarea name="notes" class="form-control" rows="3" 
+                    placeholder="Ghi chú cho nhân viên và HDV..."></textarea>
         </div>
 
         <button type="submit" class="btn btn-success me-2">
-          <i class="bi bi-save"></i> <?= isset($service) ? 'Cập nhật' : 'Lưu' ?>
+          <i class="bi bi-save"></i> Lưu
         </button>
-        <a href="index.php?act=service" class="btn btn-secondary">
+        <a href="index.php?act=special-request" class="btn btn-secondary">
           <i class="bi bi-arrow-left"></i> Quay lại
         </a>
       </form>
     </div>
-
   </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

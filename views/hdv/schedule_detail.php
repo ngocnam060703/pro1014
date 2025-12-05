@@ -1,6 +1,7 @@
 <?php 
 if (session_status() == PHP_SESSION_NONE) session_start();
 require_once __DIR__ . "/../../models/GuideScheduleModel.php";
+require_once __DIR__ . "/../../models/CustomerSpecialRequestModel.php";
 
 $guide_id = $_SESSION['guide']['id'] ?? 0;
 $departure_id = $_GET['departure_id'] ?? 0;
@@ -8,6 +9,10 @@ $departure_id = $_GET['departure_id'] ?? 0;
 $scheduleModel = new GuideScheduleModel();
 $schedule = $scheduleModel->getScheduleDetail($guide_id, $departure_id);
 $itineraryDays = $schedule ? $scheduleModel->getItineraryDays($schedule['tour_id']) : [];
+
+// Lấy yêu cầu đặc biệt cho tour này
+$requestModel = new CustomerSpecialRequestModel();
+$specialRequests = $requestModel->getByDeparture($departure_id);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -77,6 +82,49 @@ body { background:#f5f6fa; font-family: 'Segoe UI', sans-serif; }
       <div class="mb-4">
         <h5 class="text-primary">Mô tả tour</h5>
         <p><?= nl2br(htmlspecialchars($schedule['tour_description'])) ?></p>
+      </div>
+      <?php endif; ?>
+
+      <?php if(!empty($specialRequests)): ?>
+      <div class="mb-4">
+        <h5 class="text-primary"><i class="bi bi-exclamation-circle text-warning"></i> Yêu cầu đặc biệt của khách hàng</h5>
+        <div class="alert alert-warning">
+          <strong>Cảnh báo:</strong> Tour này có <?= count($specialRequests) ?> yêu cầu đặc biệt cần chú ý!
+        </div>
+        <div class="row">
+          <?php foreach($specialRequests as $req): ?>
+          <div class="col-md-6 mb-3">
+            <div class="card border-<?= $req['status'] == 'pending' ? 'warning' : ($req['status'] == 'confirmed' ? 'info' : 'success') ?>">
+              <div class="card-header bg-<?= $req['status'] == 'pending' ? 'warning' : ($req['status'] == 'confirmed' ? 'info' : 'success') ?> text-white">
+                <strong><?= htmlspecialchars($req['customer_name']) ?></strong>
+                <span class="badge bg-light text-dark float-end">
+                  <?php
+                  $typeLabels = ['diet' => 'Ăn uống', 'medical' => 'Y tế', 'accessibility' => 'Tiếp cận', 'other' => 'Khác'];
+                  echo $typeLabels[$req['request_type']] ?? $req['request_type'];
+                  ?>
+                </span>
+              </div>
+              <div class="card-body">
+                <p class="mb-2"><strong>Yêu cầu:</strong> <?= nl2br(htmlspecialchars($req['description'])) ?></p>
+                <?php if($req['notes']): ?>
+                <p class="mb-2"><small><strong>Ghi chú:</strong> <?= nl2br(htmlspecialchars($req['notes'])) ?></small></p>
+                <?php endif; ?>
+                <small class="text-muted">
+                  Trạng thái: 
+                  <span class="badge bg-<?= $req['status'] == 'completed' ? 'success' : ($req['status'] == 'confirmed' ? 'info' : 'warning') ?>">
+                    <?= $req['status'] == 'completed' ? 'Hoàn thành' : ($req['status'] == 'confirmed' ? 'Đã xác nhận' : 'Chờ xử lý') ?>
+                  </span>
+                </small>
+              </div>
+            </div>
+          </div>
+          <?php endforeach; ?>
+        </div>
+        <div class="mt-3">
+          <a href="index.php?act=hdv_customers&departure_id=<?= $departure_id ?>" class="btn btn-primary">
+            <i class="bi bi-people"></i> Xem danh sách khách và quản lý yêu cầu
+          </a>
+        </div>
       </div>
       <?php endif; ?>
 

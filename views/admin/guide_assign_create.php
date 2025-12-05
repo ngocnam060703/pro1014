@@ -45,9 +45,12 @@ body { background: linear-gradient(to right, #fbc2eb, #a6c1ee); font-family: 'Se
     <a href="index.php?act=schedule"><i class="bi bi-calendar-event"></i> Quản lý lịch trình</a>
     <a href="index.php?act=service"><i class="bi bi-grid"></i> Quản lý dịch vụ</a>
     <a href="index.php?act=tour"><i class="bi bi-card-list"></i> Quản lý Tour</a>
+    <a href="index.php?act=booking"><i class="bi bi-cart"></i> Quản lý Booking</a>
+    <a href="index.php?act=special-request"><i class="bi bi-exclamation-circle"></i> Yêu cầu đặc biệt</a>
     <a href="index.php?act=guide-assign" style="color:#fff; background:#495057; border-left:3px solid #ff6a00;">
       <i class="bi bi-card-list"></i> Phân công HDV
     </a>
+    <a href="index.php?act=guide-incident"><i class="bi bi-exclamation-triangle"></i> Danh sách sự cố</a>
     <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')">
       <i class="bi bi-box-arrow-right"></i> Đăng xuất
     </a>
