@@ -23,10 +23,16 @@ class GuideScheduleModel {
     
     // Lấy lịch trình từng ngày của tour
     public function getItineraryDays($tour_id) {
-        $sql = "SELECT * FROM tour_itinerary_detail 
-                WHERE tour_id = ? 
-                ORDER BY day_number ASC";
-        return pdo_query($sql, $tour_id);
+        // Kiểm tra xem bảng có tồn tại không
+        try {
+            $sql = "SELECT * FROM tour_itinerary_detail 
+                    WHERE tour_id = ? 
+                    ORDER BY day_number ASC";
+            return pdo_query($sql, $tour_id);
+        } catch (Exception $e) {
+            // Nếu bảng chưa tồn tại, trả về mảng rỗng
+            return [];
+        }
     }
     
     // Lấy danh sách khách trong đoàn

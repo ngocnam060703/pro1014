@@ -68,6 +68,105 @@ try {
     $conn->exec($sql_guide_assign);
     echo "✓ Bảng guide_assign đã được kiểm tra/tạo thành công!\n";
     
+    // Tạo bảng tour_itinerary_detail
+    $sql_tour_itinerary = "CREATE TABLE IF NOT EXISTS `tour_itinerary_detail` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `tour_id` int(11) NOT NULL,
+        `day_number` int(11) NOT NULL,
+        `title` varchar(255) DEFAULT NULL,
+        `description` text DEFAULT NULL,
+        `activities` text DEFAULT NULL,
+        `meals` varchar(255) DEFAULT NULL,
+        `accommodation` varchar(255) DEFAULT NULL,
+        `notes` text DEFAULT NULL,
+        `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        KEY `tour_id` (`tour_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+    
+    $conn->exec($sql_tour_itinerary);
+    echo "✓ Bảng tour_itinerary_detail đã được tạo thành công!\n";
+    
+    // Tạo bảng guide_checkin
+    $sql_checkin = "CREATE TABLE IF NOT EXISTS `guide_checkin` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `guide_id` int(11) NOT NULL,
+        `departure_id` int(11) NOT NULL,
+        `booking_id` int(11) NOT NULL,
+        `checkin_time` datetime DEFAULT NULL,
+        `checkin_location` varchar(255) DEFAULT NULL,
+        `status` enum('checked_in','absent','late') DEFAULT 'checked_in',
+        `notes` text DEFAULT NULL,
+        `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        KEY `guide_id` (`guide_id`),
+        KEY `departure_id` (`departure_id`),
+        KEY `booking_id` (`booking_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+    
+    $conn->exec($sql_checkin);
+    echo "✓ Bảng guide_checkin đã được tạo thành công!\n";
+    
+    // Tạo bảng customer_special_requests
+    $sql_special_requests = "CREATE TABLE IF NOT EXISTS `customer_special_requests` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `booking_id` int(11) NOT NULL,
+        `request_type` varchar(100) DEFAULT NULL,
+        `description` text DEFAULT NULL,
+        `status` enum('pending','confirmed','completed') DEFAULT 'pending',
+        `notes` text DEFAULT NULL,
+        `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        KEY `booking_id` (`booking_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+    
+    $conn->exec($sql_special_requests);
+    echo "✓ Bảng customer_special_requests đã được tạo thành công!\n";
+    
+    // Tạo bảng guide_feedback
+    $sql_feedback = "CREATE TABLE IF NOT EXISTS `guide_feedback` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `guide_id` int(11) NOT NULL,
+        `departure_id` int(11) NOT NULL,
+        `feedback_type` varchar(50) DEFAULT NULL,
+        `provider_name` varchar(255) DEFAULT NULL,
+        `rating` int(1) DEFAULT NULL,
+        `comment` text DEFAULT NULL,
+        `suggestions` text DEFAULT NULL,
+        `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        KEY `guide_id` (`guide_id`),
+        KEY `departure_id` (`departure_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+    
+    $conn->exec($sql_feedback);
+    echo "✓ Bảng guide_feedback đã được tạo thành công!\n";
+    
+    // Cập nhật bảng guide_journal để thêm các trường mới
+    try {
+        $conn->exec("ALTER TABLE `guide_journal` ADD COLUMN `day_number` int(11) DEFAULT NULL");
+    } catch (PDOException $e) {
+        // Bỏ qua nếu cột đã tồn tại
+    }
+    try {
+        $conn->exec("ALTER TABLE `guide_journal` ADD COLUMN `activities` text DEFAULT NULL");
+    } catch (PDOException $e) {}
+    try {
+        $conn->exec("ALTER TABLE `guide_journal` ADD COLUMN `photos` text DEFAULT NULL");
+    } catch (PDOException $e) {}
+    try {
+        $conn->exec("ALTER TABLE `guide_journal` ADD COLUMN `customer_feedback` text DEFAULT NULL");
+    } catch (PDOException $e) {}
+    try {
+        $conn->exec("ALTER TABLE `guide_journal` ADD COLUMN `weather` varchar(100) DEFAULT NULL");
+    } catch (PDOException $e) {}
+    try {
+        $conn->exec("ALTER TABLE `guide_journal` ADD COLUMN `mood` varchar(50) DEFAULT NULL");
+    } catch (PDOException $e) {}
+    
+    echo "✓ Đã cập nhật bảng guide_journal với các trường mới!\n";
+    
     echo "\n✅ Hoàn thành! Tất cả các bảng đã sẵn sàng.\n";
     
 } catch (PDOException $e) {
