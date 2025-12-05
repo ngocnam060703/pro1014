@@ -70,6 +70,12 @@ function pdo_query_value($sql, ...$params) {
     return $stmt->fetchColumn();
 }
 
+// Lấy ID vừa insert
+function pdo_last_insert_id() {
+    $conn = pdo_get_connection();
+    return $conn->lastInsertId();
+}
+
 
 // -------------------------------
 // UPLOAD FILE

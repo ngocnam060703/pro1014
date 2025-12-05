@@ -119,6 +119,20 @@ body {
         </div>
 
         <div class="mb-3">
+          <label class="form-label">Danh mục tour</label>
+          <select name="category" class="form-select" required>
+            <option value="domestic" <?= (isset($tour) && ($tour['category'] ?? '')=='domestic')?'selected':'' ?>>Tour trong nước</option>
+            <option value="international" <?= (isset($tour) && ($tour['category'] ?? '')=='international')?'selected':'' ?>>Tour quốc tế</option>
+            <option value="customized" <?= (isset($tour) && ($tour['category'] ?? '')=='customized')?'selected':'' ?>>Tour theo yêu cầu</option>
+          </select>
+          <small class="form-text text-muted">
+            <strong>Tour trong nước:</strong> Tour tham quan, du lịch các địa điểm trong nước.<br>
+            <strong>Tour quốc tế:</strong> Tour tham quan, du lịch các nước ngoài.<br>
+            <strong>Tour theo yêu cầu:</strong> Tour thiết kế riêng dựa trên yêu cầu cụ thể của từng khách hàng/đoàn khách.
+          </small>
+        </div>
+
+        <div class="mb-3">
           <label class="form-label">Trạng thái</label>
           <select name="status" class="form-select">
             <option value="active" <?= (isset($tour) && $tour['status']=='active')?'selected':'' ?>>Active</option>

@@ -111,6 +111,7 @@ body {
             <tr>
               <th>ID</th>
               <th>Tên Tour</th>
+              <th>Danh mục</th>
               <th>Điểm khởi hành</th>
               <th>Giá</th>
               <th>Số chỗ</th>
@@ -119,11 +120,29 @@ body {
           </thead>
 
           <tbody>
+          <?php 
+          // Hàm hiển thị tên danh mục
+          function getCategoryName($category) {
+              $categories = [
+                  'domestic' => ['name' => 'Tour trong nước', 'badge' => 'primary'],
+                  'international' => ['name' => 'Tour quốc tế', 'badge' => 'success'],
+                  'customized' => ['name' => 'Tour theo yêu cầu', 'badge' => 'warning']
+              ];
+              return $categories[$category] ?? ['name' => 'Chưa phân loại', 'badge' => 'secondary'];
+          }
+          ?>
           <?php if (!empty($listTour)): ?>
-            <?php foreach ($listTour as $tour): ?>
+            <?php foreach ($listTour as $tour): 
+              $categoryInfo = getCategoryName($tour['category'] ?? 'domestic');
+            ?>
             <tr>
               <td><?= $tour['id'] ?></td>
               <td class="fw-semibold text-primary"><?= $tour['title'] ?></td>
+              <td>
+                <span class="badge bg-<?= $categoryInfo['badge'] ?>">
+                  <?= $categoryInfo['name'] ?>
+                </span>
+              </td>
               <td><?= $tour['departure'] ?></td>
               <td class="fw-bold text-success"><?= number_format($tour['price']) ?> đ</td>
               <td class="fw-bold"><?= $tour['slots'] ?></td>
@@ -145,7 +164,7 @@ body {
             <?php endforeach; ?>
           <?php else: ?>
             <tr>
-              <td colspan="6" class="text-center text-muted py-3">
+              <td colspan="7" class="text-center text-muted py-3">
                 <i class="bi bi-info-circle"></i> Hiện chưa có tour nào
               </td>
             </tr>

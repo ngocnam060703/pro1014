@@ -14,7 +14,14 @@ class GuideController {
        ADMIN - LIST
     ==================== */
     public function index() {
-        $data = $this->guide->all();
+        $filters = [];
+        if (isset($_GET['category'])) {
+            $filters['category'] = $_GET['category'];
+        }
+        if (isset($_GET['status'])) {
+            $filters['status'] = $_GET['status'];
+        }
+        $data = $this->guide->all($filters);
         include "views/admin/guide_list.php";
     }
 
@@ -30,13 +37,29 @@ class GuideController {
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
         $data = [
-            "fullname" => $_POST["fullname"],
-            "phone" => $_POST["phone"],
-            "email" => $_POST["email"],
+            "fullname" => $_POST["fullname"] ?? '',
+            "phone" => $_POST["phone"] ?? '',
+            "email" => $_POST["email"] ?? '',
             "certificate" => $_POST["certificate"] ?? null,
-            "account_id" => $_POST["account_id"],
-            "password" => $password_hash
+            "account_id" => $_POST["account_id"] ?? '',
+            "password" => $password_hash,
+            "date_of_birth" => !empty($_POST["date_of_birth"]) ? $_POST["date_of_birth"] : null,
+            "photo" => $_POST["photo"] ?? null,
+            "address" => $_POST["address"] ?? null,
+            "languages" => $_POST["languages"] ?? null,
+            "experience_years" => isset($_POST["experience_years"]) ? (int)$_POST["experience_years"] : 0,
+            "experience_description" => $_POST["experience_description"] ?? null,
+            "health_status" => $_POST["health_status"] ?? 'good',
+            "health_notes" => $_POST["health_notes"] ?? null,
+            "specializations" => $_POST["specializations"] ?? null,
+            "status" => $_POST["status"] ?? 'active',
+            "notes" => $_POST["notes"] ?? null
         ];
+
+        // Xử lý phân loại
+        if (isset($_POST["categories"]) && is_array($_POST["categories"])) {
+            $data["categories"] = $_POST["categories"];
+        }
 
         $this->guide->store($data);
 
@@ -52,23 +75,70 @@ class GuideController {
     public function edit() {
         $id = $_GET["id"];
         $guide = $this->guide->find($id);
+        if (!$guide) {
+            if (session_status() == PHP_SESSION_NONE) session_start();
+            $_SESSION['error'] = "Không tìm thấy hướng dẫn viên!";
+            header("Location: index.php?act=guide");
+            exit;
+        }
+        
+        // Lấy phân loại
+        $categories = $this->guide->getCategories($id);
         include "views/admin/guide_edit.php";
     }
 
     public function update() {
         $id = $_POST["id"];
         $data = [
-            "fullname" => $_POST["fullname"],
-            "phone" => $_POST["phone"],
-            "email" => $_POST["email"],
-            "status" => $_POST["certificate"]
+            "fullname" => $_POST["fullname"] ?? '',
+            "phone" => $_POST["phone"] ?? '',
+            "email" => $_POST["email"] ?? '',
+            "certificate" => $_POST["certificate"] ?? null,
+            "date_of_birth" => !empty($_POST["date_of_birth"]) ? $_POST["date_of_birth"] : null,
+            "photo" => $_POST["photo"] ?? null,
+            "address" => $_POST["address"] ?? null,
+            "languages" => $_POST["languages"] ?? null,
+            "experience_years" => isset($_POST["experience_years"]) ? (int)$_POST["experience_years"] : 0,
+            "experience_description" => $_POST["experience_description"] ?? null,
+            "health_status" => $_POST["health_status"] ?? 'good',
+            "health_notes" => $_POST["health_notes"] ?? null,
+            "specializations" => $_POST["specializations"] ?? null,
+            "status" => $_POST["status"] ?? 'active',
+            "notes" => $_POST["notes"] ?? null
         ];
+
+        // Xử lý phân loại
+        if (isset($_POST["categories"]) && is_array($_POST["categories"])) {
+            $data["categories"] = $_POST["categories"];
+        }
 
         $this->guide->updateData($id, $data);
 
         if (session_status() == PHP_SESSION_NONE) session_start();
         $_SESSION['message'] = "Cập nhật nhân viên thành công!";
         header("Location: index.php?act=guide");
+        exit;
+    }
+
+    /* ====================
+       ADMIN - DETAIL
+    ==================== */
+    public function detail() {
+        $id = $_GET["id"];
+        $guide = $this->guide->find($id);
+        if (!$guide) {
+            if (session_status() == PHP_SESSION_NONE) session_start();
+            $_SESSION['error'] = "Không tìm thấy hướng dẫn viên!";
+            header("Location: index.php?act=guide");
+            exit;
+        }
+        
+        // Lấy các thông tin liên quan
+        $categories = $this->guide->getCategories($id);
+        $tourHistory = $this->guide->getTourHistory($id, 10);
+        $certificates = $this->guide->getCertificates($id);
+        
+        include "views/admin/guide_detail.php";
     }
 
     /* ====================

@@ -1,3 +1,29 @@
+<?php
+// Hàm hiển thị badge trạng thái
+function getStatusBadge($status) {
+    $badges = [
+        'pending' => ['class' => 'warning', 'text' => 'Chờ xác nhận'],
+        'deposit_paid' => ['class' => 'info', 'text' => 'Đã cọc'],
+        'completed' => ['class' => 'success', 'text' => 'Hoàn tất'],
+        'cancelled' => ['class' => 'danger', 'text' => 'Hủy']
+    ];
+    $status_lower = strtolower($status ?? 'pending');
+    $badge = $badges[$status_lower] ?? ['class' => 'secondary', 'text' => $status];
+    return '<span class="badge bg-' . $badge['class'] . '">' . $badge['text'] . '</span>';
+}
+
+function getPaymentStatusBadge($status) {
+    $badges = [
+        'pending' => ['class' => 'warning', 'text' => 'Chưa thanh toán'],
+        'partial' => ['class' => 'info', 'text' => 'Đã cọc'],
+        'paid' => ['class' => 'success', 'text' => 'Đã thanh toán'],
+        'refunded' => ['class' => 'secondary', 'text' => 'Đã hoàn tiền']
+    ];
+    $status_lower = strtolower($status ?? 'pending');
+    $badge = $badges[$status_lower] ?? ['class' => 'secondary', 'text' => $status];
+    return '<span class="badge bg-' . $badge['class'] . '">' . $badge['text'] . '</span>';
+}
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -83,28 +109,182 @@ body {
       </h3>
     </div>
 
-    <div class="card mb-4">
-      <div class="card-body p-4">
-        <p><strong>Khách hàng:</strong> <?= $booking['customer_name'] ?></p>
-        <p><strong>Email:</strong> <?= $booking['customer_email'] ?></p>
-        <p><strong>Phone:</strong> <?= $booking['customer_phone'] ?></p>
-        <p><strong>Tour:</strong> <?= $booking['tour_title'] ?></p>
-        <p><strong>Số lượng:</strong> <?= $booking['num_people'] ?></p>
-        <p><strong>Tổng tiền:</strong> <?= number_format($booking['total_price']) ?> đ</p>
-        <p><strong>Ngày đặt:</strong> <?= date('d/m/Y', strtotime($booking['booking_date'])) ?></p>
-        <p><strong>Trạng thái:</strong> <?= $booking['status'] ?></p>
+    <?php if (isset($_SESSION['message'])): ?>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> <?= $_SESSION['message'] ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      <?php unset($_SESSION['message']); ?>
+    <?php endif; ?>
 
-        <form action="index.php?act=booking-update-status" method="post" class="mt-3">
-            <input type="hidden" name="id" value="<?= $booking['id'] ?>">
-            <select name="status" class="form-select mb-2 w-25">
-                <option value="Pending" <?= $booking['status']=='Pending'?'selected':'' ?>>Pending</option>
-                <option value="Confirmed" <?= $booking['status']=='Confirmed'?'selected':'' ?>>Confirmed</option>
-                <option value="Cancelled" <?= $booking['status']=='Cancelled'?'selected':'' ?>>Cancelled</option>
-            </select>
-            <button type="submit" class="btn btn-success">
-              <i class="bi bi-check-circle"></i> Cập nhật trạng thái
-            </button>
-        </form>
+    <?php if (isset($_SESSION['error'])): ?>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> <?= $_SESSION['error'] ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Thông tin Booking</h5>
+      </div>
+      <div class="card-body p-4">
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="text-primary mb-3">Thông tin khách hàng</h6>
+            <p><strong>Họ tên:</strong> <?= htmlspecialchars($booking['customer_name']) ?></p>
+            <p><strong>Email:</strong> <?= htmlspecialchars($booking['customer_email']) ?></p>
+            <p><strong>Điện thoại:</strong> <?= htmlspecialchars($booking['customer_phone']) ?></p>
+            <?php if (!empty($booking['customer_address'])): ?>
+            <p><strong>Địa chỉ:</strong> <?= htmlspecialchars($booking['customer_address']) ?></p>
+            <?php endif; ?>
+            <?php if (!empty($booking['company_name'])): ?>
+            <p><strong>Công ty/Tổ chức:</strong> <?= htmlspecialchars($booking['company_name']) ?></p>
+            <?php endif; ?>
+          </div>
+          
+          <div class="col-md-6">
+            <h6 class="text-primary mb-3">Thông tin tour</h6>
+            <p><strong>Tour:</strong> <?= htmlspecialchars($booking['tour_title']) ?></p>
+            <p><strong>Số lượng:</strong> 
+              <?php if (isset($booking['num_adults']) && $booking['num_adults'] > 0): ?>
+                <?= $booking['num_adults'] ?> người lớn
+              <?php endif; ?>
+              <?php if (isset($booking['num_children']) && $booking['num_children'] > 0): ?>
+                , <?= $booking['num_children'] ?> trẻ em
+              <?php endif; ?>
+              <?php if (isset($booking['num_infants']) && $booking['num_infants'] > 0): ?>
+                , <?= $booking['num_infants'] ?> trẻ sơ sinh
+              <?php endif; ?>
+              (Tổng: <?= $booking['num_people'] ?> người)
+            </p>
+            <p><strong>Tổng tiền:</strong> <span class="text-success fw-bold"><?= number_format($booking['total_price']) ?> đ</span></p>
+            <?php if (isset($booking['deposit_amount']) && $booking['deposit_amount'] > 0): ?>
+            <p><strong>Đã cọc:</strong> <?= number_format($booking['deposit_amount']) ?> đ</p>
+            <p><strong>Còn lại:</strong> <?= number_format($booking['remaining_amount'] ?? 0) ?> đ</p>
+            <?php endif; ?>
+            <p><strong>Ngày đặt:</strong> <?= date('d/m/Y', strtotime($booking['booking_date'])) ?></p>
+            <?php if (!empty($booking['departure_date'])): ?>
+            <p><strong>Ngày khởi hành:</strong> <?= date('d/m/Y', strtotime($booking['departure_date'])) ?></p>
+            <?php endif; ?>
+          </div>
+        </div>
+        
+        <?php if (!empty($booking['special_requests'])): ?>
+        <div class="mt-3">
+          <h6 class="text-primary">Yêu cầu đặc biệt</h6>
+          <p class="text-muted"><?= nl2br(htmlspecialchars($booking['special_requests'])) ?></p>
+        </div>
+        <?php endif; ?>
+        
+        <?php if (!empty($booking['notes'])): ?>
+        <div class="mt-3">
+          <h6 class="text-primary">Ghi chú</h6>
+          <p class="text-muted"><?= nl2br(htmlspecialchars($booking['notes'])) ?></p>
+        </div>
+        <?php endif; ?>
+        
+        <div class="row mb-3 mt-3">
+          <div class="col-md-6">
+            <p><strong>Trạng thái booking:</strong> <?= getStatusBadge($booking['status'] ?? 'pending') ?></p>
+            <p><strong>Trạng thái thanh toán:</strong> <?= getPaymentStatusBadge($booking['payment_status'] ?? 'pending') ?></p>
+          </div>
+          <div class="col-md-6">
+            <?php if (isset($booking['booking_code'])): ?>
+            <p><strong>Mã booking:</strong> <code><?= htmlspecialchars($booking['booking_code']) ?></code></p>
+            <?php endif; ?>
+            <?php if (isset($booking['confirmed_at']) && $booking['confirmed_at']): ?>
+            <p><strong>Ngày xác nhận:</strong> <?= date('d/m/Y H:i', strtotime($booking['confirmed_at'])) ?></p>
+            <?php endif; ?>
+            <?php if (isset($booking['cancelled_at']) && $booking['cancelled_at']): ?>
+            <p><strong>Ngày hủy:</strong> <?= date('d/m/Y H:i', strtotime($booking['cancelled_at'])) ?></p>
+            <?php endif; ?>
+          </div>
+        </div>
+
+        <!-- Form thay đổi trạng thái -->
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-arrow-repeat"></i> Thay đổi trạng thái</h5>
+          </div>
+          <div class="card-body">
+            <form action="index.php?act=booking-update-status" method="post">
+                <input type="hidden" name="id" value="<?= $booking['id'] ?>">
+                
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Trạng thái booking <span class="text-danger">*</span></label>
+                    <select name="status" class="form-select" required>
+                        <option value="pending" <?= strtolower($booking['status'] ?? '')=='pending'?'selected':'' ?>>Chờ xác nhận</option>
+                        <option value="deposit_paid" <?= strtolower($booking['status'] ?? '')=='deposit_paid'?'selected':'' ?>>Đã cọc</option>
+                        <option value="completed" <?= strtolower($booking['status'] ?? '')=='completed'?'selected':'' ?>>Hoàn tất</option>
+                        <option value="cancelled" <?= strtolower($booking['status'] ?? '')=='cancelled'?'selected':'' ?>>Hủy</option>
+                    </select>
+                  </div>
+                  
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Trạng thái thanh toán</label>
+                    <select name="payment_status" class="form-select">
+                        <option value="">-- Giữ nguyên --</option>
+                        <option value="pending" <?= strtolower($booking['payment_status'] ?? '')=='pending'?'selected':'' ?>>Chưa thanh toán</option>
+                        <option value="partial" <?= strtolower($booking['payment_status'] ?? '')=='partial'?'selected':'' ?>>Đã cọc</option>
+                        <option value="paid" <?= strtolower($booking['payment_status'] ?? '')=='paid'?'selected':'' ?>>Đã thanh toán</option>
+                        <option value="refunded" <?= strtolower($booking['payment_status'] ?? '')=='refunded'?'selected':'' ?>>Đã hoàn tiền</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label class="form-label">Lý do thay đổi</label>
+                  <textarea name="change_reason" class="form-control" rows="2" placeholder="Nhập lý do thay đổi trạng thái (nếu có)"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-success">
+                  <i class="bi bi-check-circle"></i> Cập nhật trạng thái
+                </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Lịch sử thay đổi trạng thái -->
+        <?php if (!empty($statusHistory)): ?>
+        <div class="card">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Lịch sử thay đổi trạng thái</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Thời gian</th>
+                    <th>Trạng thái cũ</th>
+                    <th>Trạng thái mới</th>
+                    <th>Thanh toán cũ</th>
+                    <th>Thanh toán mới</th>
+                    <th>Người thay đổi</th>
+                    <th>Lý do</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach ($statusHistory as $history): ?>
+                  <tr>
+                    <td><?= date('d/m/Y H:i:s', strtotime($history['created_at'])) ?></td>
+                    <td><?= getStatusBadge($history['old_status'] ?? 'N/A') ?></td>
+                    <td><?= getStatusBadge($history['new_status']) ?></td>
+                    <td><?= getPaymentStatusBadge($history['old_payment_status']) ?></td>
+                    <td><?= getPaymentStatusBadge($history['new_payment_status']) ?></td>
+                    <td><?= htmlspecialchars($history['changed_by_name'] ?? 'Hệ thống') ?></td>
+                    <td><?= htmlspecialchars($history['change_reason'] ?? '-') ?></td>
+                  </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <?php endif; ?>
 
         <a href="index.php?act=booking" class="btn btn-secondary mt-3">
           <i class="bi bi-arrow-left-circle"></i> Quay lại danh sách
