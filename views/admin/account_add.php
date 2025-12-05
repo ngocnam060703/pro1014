@@ -43,26 +43,45 @@ body { background: #f5f6fa; font-family:'Segoe UI', sans-serif; }
         <a href="index.php?act=account" class="btn btn-secondary"><i class="bi bi-arrow-left-circle"></i> Quay lại danh sách</a>
     </div>
 
+    <?php if (!empty($_SESSION['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle"></i> <?= htmlspecialchars($_SESSION['error']) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
+    <?php
+    // Lấy dữ liệu form đã nhập (nếu có lỗi)
+    $formData = $_SESSION['form_data'] ?? [];
+    unset($_SESSION['form_data']);
+    ?>
+
     <div class="card p-4">
       <form action="index.php?act=account-store" method="post">
           <div class="mb-3">
-              <label class="form-label">Tên đăng nhập</label>
-              <input type="text" name="username" class="form-control" required>
+              <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
+              <input type="text" name="username" class="form-control" 
+                     value="<?= htmlspecialchars($formData['username'] ?? '') ?>" required>
           </div>
 
           <div class="mb-3">
-              <label class="form-label">Họ & Tên</label>
-              <input type="text" name="full_name" class="form-control" required>
+              <label class="form-label">Họ & Tên <span class="text-danger">*</span></label>
+              <input type="text" name="full_name" class="form-control" 
+                     value="<?= htmlspecialchars($formData['full_name'] ?? '') ?>" required>
           </div>
 
           <div class="mb-3">
               <label class="form-label">Số điện thoại</label>
-              <input type="text" name="phone" class="form-control" required>
+              <input type="text" name="phone" class="form-control" 
+                     value="<?= htmlspecialchars($formData['phone'] ?? '') ?>">
           </div>
 
           <div class="mb-3">
-              <label class="form-label">Email</label>
-              <input type="email" name="email" class="form-control" required>
+              <label class="form-label">Email <span class="text-danger">*</span></label>
+              <input type="email" name="email" class="form-control" 
+                     value="<?= htmlspecialchars($formData['email'] ?? '') ?>" required>
+              <small class="text-muted">Email phải là duy nhất</small>
           </div>
 
           <div class="mb-3">
@@ -73,16 +92,16 @@ body { background: #f5f6fa; font-family:'Segoe UI', sans-serif; }
           <div class="mb-3">
               <label class="form-label">Vai trò</label>
               <select name="role" class="form-select">
-                  <option value="admin">Admin</option>
-                  <option value="user" selected>User</option>
+                  <option value="admin" <?= ($formData['role'] ?? 'user') == 'admin' ? 'selected' : '' ?>>Admin</option>
+                  <option value="user" <?= ($formData['role'] ?? 'user') == 'user' ? 'selected' : '' ?>>User</option>
               </select>
           </div>
 
           <div class="mb-3">
               <label class="form-label">Trạng thái</label>
               <select name="status" class="form-select">
-                  <option value="active" selected>Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="active" <?= ($formData['status'] ?? 'active') == 'active' ? 'selected' : '' ?>>Active</option>
+                  <option value="inactive" <?= ($formData['status'] ?? '') == 'inactive' ? 'selected' : '' ?>>Inactive</option>
               </select>
           </div>
 

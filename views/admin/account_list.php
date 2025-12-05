@@ -85,6 +85,14 @@ body {
         <?php unset($_SESSION['message']); ?>
     <?php endif; ?>
 
+    <?php if (!empty($_SESSION['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle"></i> <?= htmlspecialchars($_SESSION['error']) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
     <div class="card p-3 shadow-sm">
         <table class="table table-bordered table-hover align-middle mb-0">
             <thead>
