@@ -42,6 +42,7 @@ body { background: #f5f6fa; font-family: 'Segoe UI', sans-serif; }
     <a href="index.php?act=tour"><i class="bi bi-card-list"></i> Quản lý Tour</a>
     <a href="index.php?act=booking"><i class="bi bi-cart"></i> Quản lý Booking</a>
     <a href="index.php?act=guide-assign" style="color:#fff; background:#495057; border-left:3px solid #0d6efd;"><i class="bi bi-card-list"></i> Phân công HDV</a>
+    <a href="index.php?act=guide-incident"><i class="bi bi-exclamation-triangle"></i> Danh sách sự cố</a>
     <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a>
   </div>
 

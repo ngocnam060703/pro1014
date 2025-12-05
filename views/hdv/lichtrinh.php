@@ -25,10 +25,10 @@ body { background:#f5f6fa; font-family: 'Segoe UI', sans-serif; }
   <div class="col-2 sidebar">
     <h4 class="text-center text-light mb-4">HDV</h4>
     <a href="index.php?act=hdv_dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="index.php?act=hdv_schedule" class="active" style="color:#fff; background:#495057; border-left:3px solid #0d6efd;">
-      <i class="bi bi-calendar-event"></i> Lịch trình
+    <a href="index.php?act=hdv_lichtrinh"><i class="bi bi-calendar-event"></i> Xem lịch HDV</a>
     </a>
-    <a href="index.php?act=hdv_journal"><i class="bi bi-journal-text"></i> Nhật ký</a>
+    <a href="index.php?act=hdv_journal"><i class="bi bi-journal-text"></i> Nhật ký tour</a>
+    <a href="index.php?act=hdv_data"><i class="bi bi-exclamation-triangle"></i> Báo cáo sự cố</a>
     <a href="?act=logout"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a>
   </div>
 
