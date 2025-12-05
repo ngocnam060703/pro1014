@@ -114,19 +114,36 @@ class AdminController {
     // Lưu tài khoản mới
     public function accountStore() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $data = [
-                'username' => $_POST['username'],
-                'password' => password_hash($_POST['password'], PASSWORD_DEFAULT),
-                'full_name' => $_POST['full_name'],
-                'phone' => $_POST['phone'],
-                'email' => $_POST['email'],
-                'role' => $_POST['role'],
-                'status' => $_POST['status']
-            ];
+            try {
+                $data = [
+                    'username' => $_POST['username'] ?? '',
+                    'password' => password_hash($_POST['password'] ?? '', PASSWORD_DEFAULT),
+                    'full_name' => $_POST['full_name'] ?? '',
+                    'phone' => $_POST['phone'] ?? '',
+                    'email' => $_POST['email'] ?? '',
+                    'role' => $_POST['role'] ?? 'user',
+                    'status' => $_POST['status'] ?? 'active'
+                ];
 
-            $this->userModel->insertUser($data);
-            header("Location: index.php?act=account");
-            exit;
+                // Validate dữ liệu
+                if (empty($data['username']) || empty($data['email']) || empty($_POST['password'])) {
+                    throw new Exception("Vui lòng điền đầy đủ thông tin bắt buộc!");
+                }
+
+                $this->userModel->insertUser($data);
+                
+                if (session_status() == PHP_SESSION_NONE) session_start();
+                $_SESSION['message'] = "Thêm tài khoản thành công!";
+                header("Location: index.php?act=account");
+                exit;
+            } catch (Exception $e) {
+                if (session_status() == PHP_SESSION_NONE) session_start();
+                $_SESSION['error'] = $e->getMessage();
+                // Giữ lại dữ liệu để hiển thị lại form
+                $_SESSION['form_data'] = $_POST;
+                header("Location: index.php?act=account-create");
+                exit;
+            }
         }
     }
 
@@ -140,23 +157,38 @@ class AdminController {
     // Cập nhật tài khoản
     public function accountUpdate() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id = $_POST['id'];
-            $data = [
-                'username' => $_POST['username'],
-                'full_name' => $_POST['full_name'],
-                'phone' => $_POST['phone'],
-                'email' => $_POST['email'],
-                'role' => $_POST['role'],
-                'status' => $_POST['status']
-            ];
+            try {
+                $id = $_POST['id'] ?? 0;
+                $data = [
+                    'username' => $_POST['username'] ?? '',
+                    'full_name' => $_POST['full_name'] ?? '',
+                    'phone' => $_POST['phone'] ?? '',
+                    'email' => $_POST['email'] ?? '',
+                    'role' => $_POST['role'] ?? 'user',
+                    'status' => $_POST['status'] ?? 'active'
+                ];
 
-            if (!empty($_POST['password'])) {
-                $data['password'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
+                if (!empty($_POST['password'])) {
+                    $data['password'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
+                }
+
+                // Validate dữ liệu
+                if (empty($data['username']) || empty($data['email'])) {
+                    throw new Exception("Vui lòng điền đầy đủ thông tin bắt buộc!");
+                }
+
+                $this->userModel->updateUser($id, $data);
+                
+                if (session_status() == PHP_SESSION_NONE) session_start();
+                $_SESSION['message'] = "Cập nhật tài khoản thành công!";
+                header("Location: index.php?act=account");
+                exit;
+            } catch (Exception $e) {
+                if (session_status() == PHP_SESSION_NONE) session_start();
+                $_SESSION['error'] = $e->getMessage();
+                header("Location: index.php?act=account-edit&id=" . ($_POST['id'] ?? 0));
+                exit;
             }
-
-            $this->userModel->updateUser($id, $data);
-            header("Location: index.php?act=account");
-            exit;
         }
     }
 

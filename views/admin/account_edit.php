@@ -47,6 +47,22 @@ body { background: #f5f6fa; font-family:'Segoe UI', sans-serif; }
         <a href="index.php?act=account" class="btn btn-secondary"><i class="bi bi-arrow-left-circle"></i> Quay lại danh sách</a>
     </div>
 
+    <?php if (!empty($_SESSION['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle"></i> <?= htmlspecialchars($_SESSION['error']) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
+    <?php if (!empty($_SESSION['message'])): ?>
+        <div class="alert alert-success alert-dismissible fade show">
+            <?= htmlspecialchars($_SESSION['message']) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['message']); ?>
+    <?php endif; ?>
+
     <div class="card p-4">
       <form action="index.php?act=<?= isset($user['id']) ? 'account-update' : 'account-store' ?>" method="post">
           <?php if(isset($user['id'])): ?>
@@ -64,8 +80,9 @@ body { background: #f5f6fa; font-family:'Segoe UI', sans-serif; }
           </div>
 
           <div class="mb-3">
-              <label class="form-label">Email</label>
+              <label class="form-label">Email <span class="text-danger">*</span></label>
               <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($user['email']) ?>" required>
+              <small class="text-muted">Email phải là duy nhất</small>
           </div>
 
           <div class="mb-3">
