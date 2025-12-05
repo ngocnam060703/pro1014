@@ -15,6 +15,7 @@ require_once "controllers/AdminBookingController.php";
 require_once "controllers/GuideAuthController.php";
 require_once "controllers/GuideIncidentController.php";
 require_once "controllers/SpecialRequestController.php";
+require_once "controllers/RevenueReportController.php";
 
 // =====================
 // MAKE CONTROLLER INSTANCE
@@ -30,6 +31,7 @@ $adminBookingController  = new AdminBookingController();
 $guideAuth               = new GuideAuthController();
 $guideIncidentController = new GuideIncidentController();
 $specialRequestController = new SpecialRequestController();
+$revenueReportController = new RevenueReportController();
 
 // =====================
 // GET ACTION
@@ -553,6 +555,26 @@ switch ($act) {
         $scheduleController->scheduleDelete();
         break;
 
+    case "schedule-detail":
+        $scheduleController->scheduleDetail();
+        break;
+
+    case "staff-assignment-store":
+        $scheduleController->staffAssignmentStore();
+        break;
+
+    case "staff-assignment-delete":
+        $scheduleController->staffAssignmentDelete();
+        break;
+
+    case "service-allocation-store":
+        $scheduleController->serviceAllocationStore();
+        break;
+
+    case "service-allocation-delete":
+        $scheduleController->serviceAllocationDelete();
+        break;
+
     // SERVICE
     case "service":
         $serviceController->list();
@@ -691,6 +713,22 @@ switch ($act) {
         $adminBookingController->bookingList();
         break;
 
+    case "booking-create":
+        $adminBookingController->bookingCreate();
+        break;
+
+    case "booking-store":
+        $adminBookingController->bookingStore();
+        break;
+
+    case "booking-check-availability":
+        $adminBookingController->bookingCheckAvailability();
+        break;
+
+    case "booking-calculate-price":
+        $adminBookingController->bookingCalculatePrice();
+        break;
+
     case "booking-detail":
         $adminBookingController->bookingDetail();
         break;
@@ -701,6 +739,15 @@ switch ($act) {
 
     case "booking-delete":
         $adminBookingController->delete();
+        break;
+
+    // REVENUE REPORT
+    case "revenue-report":
+        $revenueReportController->index();
+        break;
+
+    case "revenue-report-detail":
+        $revenueReportController->tourDetail();
         break;
 
     // DEFAULT

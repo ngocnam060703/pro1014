@@ -105,6 +105,22 @@ body {
       </div>
     </div>
 
+    <?php if (!empty($_SESSION['message'])): ?>
+        <div class="alert alert-success alert-dismissible fade show">
+            <?= $_SESSION['message'] ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['message']); ?>
+    <?php endif; ?>
+
+    <?php if (!empty($_SESSION['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show">
+            <?= $_SESSION['error'] ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
     <div class="card">
       <div class="card-body p-4">
 
@@ -145,14 +161,18 @@ body {
               <td><?= $schedule['notes'] ?></td>
 
               <td class="text-center">
+                <a href="index.php?act=schedule-detail&id=<?= $schedule['id'] ?>" 
+                   class="btn btn-info btn-sm me-1" title="Chi tiết">
+                  <i class="bi bi-eye"></i>
+                </a>
                 <a href="index.php?act=schedule-edit&id=<?= $schedule['id'] ?>" 
-                   class="btn btn-warning btn-sm me-1">
+                   class="btn btn-warning btn-sm me-1" title="Sửa">
                   <i class="bi bi-pencil"></i>
                 </a>
 
                 <a href="index.php?act=schedule-delete&id=<?= $schedule['id'] ?>" 
                    onclick="return confirm('Bạn có chắc chắn muốn xóa lịch trình ID <?= $schedule['id'] ?> không?')" 
-                   class="btn btn-danger btn-sm">
+                   class="btn btn-danger btn-sm" title="Xóa">
                   <i class="bi bi-trash"></i>
                 </a>
               </td>

@@ -89,6 +89,9 @@ body {
       </h3>
 
       <div>
+        <a href="index.php?act=booking-create" class="btn btn-primary me-2">
+          <i class="bi bi-plus-circle"></i> Tạo Booking Mới
+        </a>
         <a href="index.php?act=dashboard" class="btn btn-secondary">
           <i class="bi bi-arrow-left-circle"></i> Quay lại Dashboard
         </a>
@@ -125,7 +128,18 @@ body {
               <td class="text-center fw-bold text-success"><?= $b['num_people'] ?></td>
               <td class="text-end"><?= number_format($b['total_price']) ?> đ</td>
               <td><?= date('d/m/Y', strtotime($b['booking_date'])) ?></td>
-              <td><?= $b['status'] ?></td>
+              <td>
+                <?php
+                $status = strtolower($b['status'] ?? 'pending');
+                $badges = [
+                    'pending' => '<span class="badge bg-warning">Chờ xác nhận</span>',
+                    'deposit_paid' => '<span class="badge bg-info">Đã cọc</span>',
+                    'completed' => '<span class="badge bg-success">Hoàn tất</span>',
+                    'cancelled' => '<span class="badge bg-danger">Hủy</span>'
+                ];
+                echo $badges[$status] ?? '<span class="badge bg-secondary">' . htmlspecialchars($b['status']) . '</span>';
+                ?>
+              </td>
               <td class="text-center">
                 <a href="index.php?act=booking-detail&id=<?= $b['id'] ?>" class="btn btn-warning btn-sm me-1">
                   <i class="bi bi-eye"></i>

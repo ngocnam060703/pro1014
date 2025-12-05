@@ -96,34 +96,119 @@ body {
         <?php unset($_SESSION['message']); ?>
     <?php endif; ?>
 
+    <?php if (!empty($_SESSION['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show">
+            <?= $_SESSION['error'] ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
+    <!-- Bộ lọc -->
+    <div class="card p-3 mb-3 shadow-sm">
+        <form method="get" action="index.php" class="row g-3">
+            <input type="hidden" name="act" value="guide">
+            <div class="col-md-4">
+                <label class="form-label">Phân loại</label>
+                <select name="category" class="form-select">
+                    <option value="">Tất cả</option>
+                    <option value="domestic" <?= (isset($_GET['category']) && $_GET['category'] == 'domestic') ? 'selected' : '' ?>>Tour trong nước</option>
+                    <option value="international" <?= (isset($_GET['category']) && $_GET['category'] == 'international') ? 'selected' : '' ?>>Tour quốc tế</option>
+                    <option value="specialized_route" <?= (isset($_GET['category']) && $_GET['category'] == 'specialized_route') ? 'selected' : '' ?>>Chuyên tuyến</option>
+                    <option value="group_tour" <?= (isset($_GET['category']) && $_GET['category'] == 'group_tour') ? 'selected' : '' ?>>Chuyên khách đoàn</option>
+                    <option value="customized" <?= (isset($_GET['category']) && $_GET['category'] == 'customized') ? 'selected' : '' ?>>Tour theo yêu cầu</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Trạng thái</label>
+                <select name="status" class="form-select">
+                    <option value="">Tất cả</option>
+                    <option value="active" <?= (isset($_GET['status']) && $_GET['status'] == 'active') ? 'selected' : '' ?>>Đang hoạt động</option>
+                    <option value="inactive" <?= (isset($_GET['status']) && $_GET['status'] == 'inactive') ? 'selected' : '' ?>>Tạm nghỉ</option>
+                    <option value="on_leave" <?= (isset($_GET['status']) && $_GET['status'] == 'on_leave') ? 'selected' : '' ?>>Nghỉ phép</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2"><i class="bi bi-funnel"></i> Lọc</button>
+                <a href="index.php?act=guide" class="btn btn-secondary"><i class="bi bi-arrow-clockwise"></i> Reset</a>
+            </div>
+        </form>
+    </div>
+
     <div class="card p-3 shadow-sm">
       <table class="table table-bordered table-hover align-middle mb-0">
           <thead>
               <tr>
                   <th>ID</th>
+                  <th>Ảnh</th>
                   <th>Tên</th>
                   <th>SĐT</th>
                   <th>Email</th>
-                  <th>Chứng chỉ</th>
+                  <th>Kinh nghiệm</th>
+                  <th>Đánh giá</th>
+                  <th>Trạng thái</th>
                   <th class="text-center">Hành động</th>
               </tr>
           </thead>
           <tbody>
               <?php if (!empty($data)) { ?>
-                  <?php foreach ($data as $guide) { ?>
+                  <?php foreach ($data as $guide) { 
+                      $statusBadge = [
+                          'active' => 'bg-success',
+                          'inactive' => 'bg-secondary',
+                          'on_leave' => 'bg-warning'
+                      ];
+                      $statusText = [
+                          'active' => 'Đang hoạt động',
+                          'inactive' => 'Tạm nghỉ',
+                          'on_leave' => 'Nghỉ phép'
+                      ];
+                      $status = $guide['status'] ?? 'active';
+                  ?>
                       <tr>
                           <td><?= $guide['id'] ?></td>
-                          <td class="fw-semibold text-primary"><?= htmlspecialchars($guide['fullname']) ?></td>
+                          <td>
+                              <?php if (!empty($guide['photo'])): ?>
+                                  <img src="<?= htmlspecialchars($guide['photo']) ?>" alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                              <?php else: ?>
+                                  <div class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; font-size: 16px;">
+                                      <?= strtoupper(substr($guide['fullname'], 0, 1)) ?>
+                                  </div>
+                              <?php endif; ?>
+                          </td>
+                          <td class="fw-semibold text-primary">
+                              <a href="index.php?act=guide-detail&id=<?= $guide['id'] ?>" class="text-decoration-none">
+                                  <?= htmlspecialchars($guide['fullname']) ?>
+                              </a>
+                          </td>
                           <td><?= htmlspecialchars($guide['phone']) ?></td>
                           <td><?= htmlspecialchars($guide['email']) ?></td>
-                          <td><?= htmlspecialchars($guide['certificate']) ?></td>
+                          <td>
+                              <?= isset($guide['experience_years']) && $guide['experience_years'] > 0 ? $guide['experience_years'] . ' năm' : 'Mới' ?>
+                          </td>
+                          <td>
+                              <?php 
+                              $rating = isset($guide['avg_rating']) && $guide['avg_rating'] ? number_format($guide['avg_rating'], 1) : '0.0';
+                              $totalTours = $guide['total_tours'] ?? 0;
+                              ?>
+                              <span class="badge bg-info"><?= $rating ?>/5.0</span>
+                              <small class="text-muted">(<?= $totalTours ?> tour)</small>
+                          </td>
+                          <td>
+                              <span class="badge <?= $statusBadge[$status] ?? 'bg-secondary' ?>">
+                                  <?= $statusText[$status] ?? 'N/A' ?>
+                              </span>
+                          </td>
                           <td class="text-center">
-                              <a href="index.php?act=guide-edit&id=<?= $guide['id'] ?>" class="btn btn-warning btn-sm me-1">
+                              <a href="index.php?act=guide-detail&id=<?= $guide['id'] ?>" class="btn btn-info btn-sm me-1" title="Chi tiết">
+                                  <i class="bi bi-eye"></i>
+                              </a>
+                              <a href="index.php?act=guide-edit&id=<?= $guide['id'] ?>" class="btn btn-warning btn-sm me-1" title="Sửa">
                                   <i class="bi bi-pencil-square"></i>
                               </a>
                               <a href="index.php?act=guide-delete&id=<?= $guide['id'] ?>" 
                                  onclick="return confirm('Bạn có chắc muốn xóa nhân viên này?')" 
-                                 class="btn btn-danger btn-sm">
+                                 class="btn btn-danger btn-sm" title="Xóa">
                                   <i class="bi bi-trash"></i>
                               </a>
                           </td>
@@ -131,7 +216,7 @@ body {
                   <?php } ?>
               <?php } else { ?>
                   <tr>
-                      <td colspan="6" class="text-center text-muted py-3">Không có nhân viên nào</td>
+                      <td colspan="9" class="text-center text-muted py-3">Không có nhân viên nào</td>
                   </tr>
               <?php } ?>
           </tbody>
