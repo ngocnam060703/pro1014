@@ -13,6 +13,7 @@ require_once "controllers/ScheduleController.php";
 require_once "controllers/ServiceController.php";
 require_once "controllers/AdminBookingController.php";
 require_once "controllers/GuideAuthController.php";
+require_once "controllers/GuideIncidentController.php";
 
 // =====================
 // MAKE CONTROLLER INSTANCE
@@ -26,6 +27,7 @@ $scheduleController      = new ScheduleController();
 $serviceController       = new ServiceController();
 $adminBookingController  = new AdminBookingController();
 $guideAuth               = new GuideAuthController();
+$guideIncidentController = new GuideIncidentController();
 
 // =====================
 // GET ACTION
@@ -156,6 +158,34 @@ switch ($act) {
     case "account-delete":
         $adminController->accountDelete();
         break;
+    // GUIDE INCIDENT (SỰ CỐ HDV)
+    case "guide-incident":
+        $guideIncidentController->index(); // danh sách sự cố
+        break;
+
+    case "guide-incident-create":
+        $guideIncidentController->create(); // form tạo mới
+        break;
+
+    case "guide-incident-store":
+        $guideIncidentController->store(); // lưu mới
+        break;
+
+    case "guide-incident-edit":
+        $guideIncidentController->edit(); // form sửa
+        break;
+
+    case "guide-incident-update":
+        $guideIncidentController->update(); // cập nhật
+        break;
+
+    case "guide-incident-delete":
+        $guideIncidentController->delete(); // xóa
+        break;
+    case "guide-incident-detail":
+    $guideIncidentController->detail();
+    break;
+
 
     // TOUR
     case "tour":
