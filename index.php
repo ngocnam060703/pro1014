@@ -107,12 +107,43 @@ if (strpos($act, "hdv_") === 0) {
 
         case "hdv_journal_store":
             require_once "models/GuideJournalModel.php";
+            require_once "commons/function.php";
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $journalModel = new GuideJournalModel();
+                
+                // Xử lý upload ảnh
+                $photos = null;
+                if (!empty($_FILES['photos']['name'][0])) {
+                    $photoPaths = [];
+                    foreach($_FILES['photos']['tmp_name'] as $key => $tmp_name) {
+                        if ($tmp_name) {
+                            $file = [
+                                'name' => $_FILES['photos']['name'][$key],
+                                'tmp_name' => $tmp_name,
+                                'type' => $_FILES['photos']['type'][$key],
+                                'size' => $_FILES['photos']['size'][$key]
+                            ];
+                            $path = uploadFile($file, "uploads/journals/");
+                            if ($path) {
+                                $photoPaths[] = $path;
+                            }
+                        }
+                    }
+                    if (!empty($photoPaths)) {
+                        $photos = implode(',', $photoPaths);
+                    }
+                }
+                
                 $data = [
                     "guide_id" => $_POST["guide_id"],
                     "departure_id" => $_POST["departure_id"],
-                    "note" => $_POST["note"]
+                    "note" => $_POST["note"],
+                    "day_number" => $_POST["day_number"] ?? null,
+                    "activities" => $_POST["activities"] ?? null,
+                    "photos" => $photos,
+                    "customer_feedback" => $_POST["customer_feedback"] ?? null,
+                    "weather" => $_POST["weather"] ?? null,
+                    "mood" => $_POST["mood"] ?? null
                 ];
                 $journalModel->store($data);
                 $_SESSION['message'] = "Thêm nhật ký thành công!";
@@ -183,6 +214,97 @@ if (strpos($act, "hdv_") === 0) {
 
         case "hdv_data":
             include "views/hdv/data.php";
+            break;
+
+        case "hdv_schedule_detail":
+            require_once "models/GuideScheduleModel.php";
+            include "views/hdv/schedule_detail.php";
+            break;
+
+        case "hdv_customers":
+            require_once "models/GuideScheduleModel.php";
+            require_once "models/CustomerSpecialRequestModel.php";
+            include "views/hdv/customers.php";
+            break;
+
+        case "hdv_checkin":
+            require_once "models/GuideScheduleModel.php";
+            require_once "models/GuideCheckinModel.php";
+            include "views/hdv/checkin.php";
+            break;
+
+        case "hdv_checkin_store":
+            require_once "models/GuideCheckinModel.php";
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $checkinModel = new GuideCheckinModel();
+                $guide_id = $_POST['guide_id'];
+                $departure_id = $_POST['departure_id'];
+                $booking_ids = $_POST['booking_ids'] ?? [];
+                $statuses = $_POST['status'] ?? [];
+                $notes = $_POST['notes'] ?? [];
+                $location = $_POST['checkin_location'] ?? '';
+                
+                foreach($booking_ids as $booking_id) {
+                    $data = [
+                        'guide_id' => $guide_id,
+                        'departure_id' => $departure_id,
+                        'booking_id' => $booking_id,
+                        'checkin_time' => date('Y-m-d H:i:s'),
+                        'checkin_location' => $location,
+                        'status' => $statuses[$booking_id] ?? 'checked_in',
+                        'notes' => $notes[$booking_id] ?? null
+                    ];
+                    $checkinModel->checkin($data);
+                }
+                $_SESSION['message'] = "Check-in thành công!";
+            }
+            header("Location: index.php?act=hdv_checkin&departure_id=" . $_POST['departure_id']);
+            exit;
+            break;
+
+        case "hdv_special_request_store":
+            require_once "models/CustomerSpecialRequestModel.php";
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $requestModel = new CustomerSpecialRequestModel();
+                $data = [
+                    'booking_id' => $_POST['booking_id'],
+                    'request_type' => $_POST['request_type'],
+                    'description' => $_POST['description'],
+                    'status' => 'pending',
+                    'notes' => $_POST['notes'] ?? null
+                ];
+                $requestModel->store($data);
+                $_SESSION['message'] = "Đã thêm yêu cầu đặc biệt!";
+            }
+            header("Location: " . $_SERVER['HTTP_REFERER'] ?? "index.php?act=hdv_customers");
+            exit;
+            break;
+
+        case "hdv_feedback":
+            require_once "models/GuideFeedbackModel.php";
+            require_once "models/GuideScheduleModel.php";
+            include "views/hdv/feedback.php";
+            break;
+
+        case "hdv_feedback_store":
+            require_once "models/GuideFeedbackModel.php";
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $feedbackModel = new GuideFeedbackModel();
+                $data = [
+                    'guide_id' => $_POST['guide_id'],
+                    'departure_id' => $_POST['departure_id'] ?? null,
+                    'feedback_type' => $_POST['feedback_type'],
+                    'provider_name' => $_POST['provider_name'] ?? null,
+                    'rating' => $_POST['rating'] ?? null,
+                    'comment' => $_POST['comment'],
+                    'suggestions' => $_POST['suggestions'] ?? null
+                ];
+                $feedbackModel->store($data);
+                $_SESSION['message'] = "Đã gửi phản hồi thành công!";
+            }
+            $redirect = $_POST['departure_id'] ? "index.php?act=hdv_feedback&departure_id=" . $_POST['departure_id'] : "index.php?act=hdv_feedback";
+            header("Location: " . $redirect);
+            exit;
             break;
 
         case "hdv_incident_store":

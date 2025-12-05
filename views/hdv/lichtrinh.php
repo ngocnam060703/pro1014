@@ -56,13 +56,18 @@ body { background:#f5f6fa; font-family: 'Segoe UI', sans-serif; }
               <th>Số khách tối đa</th>
               <th>Ghi chú</th>
               <th>Trạng thái</th>
+              <th>Thao tác</th>
             </tr>
           </thead>
           <tbody>
           <?php foreach($schedules as $i => $sch): ?>
             <tr>
               <td><?= $i+1 ?></td>
-              <td><?= htmlspecialchars($sch['tour_name'] ?? 'Chưa có') ?></td>
+              <td>
+                <a href="index.php?act=hdv_schedule_detail&departure_id=<?= $sch['departure_id'] ?>" class="text-primary fw-bold">
+                  <?= htmlspecialchars($sch['tour_name'] ?? 'Chưa có') ?>
+                </a>
+              </td>
               <td><?= date('d/m/Y H:i', strtotime($sch['departure_time'] ?? '')) ?></td>
               <td><?= htmlspecialchars($sch['meeting_point'] ?? $sch['meeting_point'] ?? '') ?></td>
               <td><?= $sch['max_people'] ?? '' ?></td>
@@ -85,6 +90,11 @@ body { background:#f5f6fa; font-family: 'Segoe UI', sans-serif; }
                   ];
                   echo '<span class="' . $badge . '">' . ($statusText[$status] ?? ucfirst($status)) . '</span>';
                 ?>
+              </td>
+              <td>
+                <a href="index.php?act=hdv_schedule_detail&departure_id=<?= $sch['departure_id'] ?>" class="btn btn-sm btn-primary">
+                  <i class="bi bi-eye"></i> Chi tiết
+                </a>
               </td>
             </tr>
           <?php endforeach; ?>

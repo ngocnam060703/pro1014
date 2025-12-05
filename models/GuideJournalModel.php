@@ -21,23 +21,35 @@ class GuideJournalModel {
     }
 
     public function store($data) {
-        $sql = "INSERT INTO guide_journal (guide_id, departure_id, note)
-                VALUES (?, ?, ?)";
+        $sql = "INSERT INTO guide_journal (guide_id, departure_id, note, day_number, activities, photos, customer_feedback, weather, mood)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         return pdo_execute($sql,
             $data['guide_id'],
             $data['departure_id'],
-            $data['note']
+            $data['note'],
+            $data['day_number'] ?? null,
+            $data['activities'] ?? null,
+            $data['photos'] ?? null,
+            $data['customer_feedback'] ?? null,
+            $data['weather'] ?? null,
+            $data['mood'] ?? null
         );
     }
 
     public function updateData($id, $data) {
         $sql = "UPDATE guide_journal
-                SET guide_id=?, departure_id=?, note=?
+                SET guide_id=?, departure_id=?, note=?, day_number=?, activities=?, photos=?, customer_feedback=?, weather=?, mood=?
                 WHERE id=?";
         return pdo_execute($sql,
             $data['guide_id'],
             $data['departure_id'],
             $data['note'],
+            $data['day_number'] ?? null,
+            $data['activities'] ?? null,
+            $data['photos'] ?? null,
+            $data['customer_feedback'] ?? null,
+            $data['weather'] ?? null,
+            $data['mood'] ?? null,
             $id
         );
     }

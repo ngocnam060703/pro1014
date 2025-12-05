@@ -103,27 +103,41 @@ LIMIT 1;
 -- ============================================
 -- 5. TẠO NHẬT KÝ MẪU
 -- ============================================
-SET @gid = (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1);
-SET @did = (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1);
-
 INSERT INTO `guide_journal` (`guide_id`, `departure_id`, `note`, `created_at`)
-SELECT @gid, @did, 
+SELECT guide_id, departure_id, 
        'Tour diễn ra tốt đẹp. Khách hàng rất hài lòng với dịch vụ. Thời tiết đẹp, không có sự cố gì.',
        DATE_SUB(NOW(), INTERVAL 2 DAY)
-WHERE @gid IS NOT NULL AND @did IS NOT NULL
-LIMIT 1;
+FROM guide_assign
+ORDER BY id LIMIT 1;
 
 -- ============================================
 -- 6. TẠO BÁO CÁO SỰ CỐ MẪU
 -- ============================================
 INSERT INTO `guide_incidents` (`guide_id`, `departure_id`, `incident_type`, `severity`, `description`, `solution`, `created_at`)
-SELECT @gid, @did,
-       'Khách hàng', 'low',
-       'Một khách hàng bị say xe nhẹ trong quá trình di chuyển',
-       'Đã cung cấp túi nôn và thuốc chống say xe. Khách đã ổn sau 30 phút.',
-       DATE_SUB(NOW(), INTERVAL 1 DAY)
-WHERE @gid IS NOT NULL AND @did IS NOT NULL
-LIMIT 1;
+SELECT guide_id, departure_id, incident_type, severity, description, solution, created_date
+FROM (
+    SELECT guide_id, departure_id,
+           'Khách hàng' as incident_type, 'low' as severity,
+           'Một khách hàng bị say xe nhẹ trong quá trình di chuyển' as description,
+           'Đã cung cấp túi nôn và thuốc chống say xe. Khách đã ổn sau 30 phút.' as solution,
+           DATE_SUB(NOW(), INTERVAL 3 DAY) as created_date
+    FROM guide_assign ORDER BY id LIMIT 1
+    UNION ALL
+    SELECT guide_id, departure_id,
+           'Phương tiện', 'low',
+           'Xe bị kẹt xe do tai nạn trên đường',
+           'Đã thông báo cho khách hàng và điều chỉnh lịch trình. Khách hàng hiểu và đồng ý.',
+           DATE_SUB(NOW(), INTERVAL 2 DAY)
+    FROM guide_assign ORDER BY id LIMIT 1 OFFSET 1
+    UNION ALL
+    SELECT guide_id, departure_id,
+           'Dịch vụ', 'low',
+           'Nhà hàng phục vụ chậm, khách hàng phàn nàn',
+           'Đã trao đổi với quản lý nhà hàng. Đã xin lỗi khách hàng và bù đắp bằng món tráng miệng miễn phí.',
+           DATE_SUB(NOW(), INTERVAL 1 DAY)
+    FROM guide_assign ORDER BY id LIMIT 1
+) AS tmp
+WHERE guide_id IS NOT NULL AND departure_id IS NOT NULL;
 
 -- ============================================
 -- KẾT QUẢ

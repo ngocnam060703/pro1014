@@ -74,8 +74,11 @@ body { background: #f5f6fa; font-family: 'Segoe UI', sans-serif; }
             <tr>
               <th>#</th>
               <th>Tour</th>
-              <th>Ngày khởi hành</th>
+              <th>Ngày</th>
+              <th>Ngày số</th>
+              <th>Hoạt động</th>
               <th>Ghi chú</th>
+              <th>Hình ảnh</th>
               <th>Thao tác</th>
             </tr>
           </thead>
@@ -85,7 +88,37 @@ body { background: #f5f6fa; font-family: 'Segoe UI', sans-serif; }
               <td><?= $i + 1 ?></td>
               <td><?= htmlspecialchars($item['tour_name'] ?? $item['departure_name'] ?? 'N/A') ?></td>
               <td><?= $item['departure_time'] ? date('d/m/Y H:i', strtotime($item['departure_time'])) : 'N/A' ?></td>
-              <td><?= htmlspecialchars($item['note'] ?? '') ?></td>
+              <td>
+                <?php if($item['day_number']): ?>
+                  <span class="badge bg-info">Ngày <?= $item['day_number'] ?></span>
+                <?php else: ?>
+                  <span class="text-muted">-</span>
+                <?php endif; ?>
+              </td>
+              <td>
+                <?php if($item['activities']): ?>
+                  <small><?= htmlspecialchars(substr($item['activities'], 0, 50)) . (strlen($item['activities']) > 50 ? '...' : '') ?></small>
+                <?php else: ?>
+                  <span class="text-muted">-</span>
+                <?php endif; ?>
+              </td>
+              <td>
+                <small><?= htmlspecialchars(substr($item['note'] ?? '', 0, 80)) . (strlen($item['note'] ?? '') > 80 ? '...' : '') ?></small>
+                <?php if($item['customer_feedback']): ?>
+                  <br><span class="badge bg-success">Có phản hồi KH</span>
+                <?php endif; ?>
+              </td>
+              <td>
+                <?php if($item['photos']): ?>
+                  <?php 
+                    $photos = explode(',', $item['photos']);
+                    $photoCount = count($photos);
+                  ?>
+                  <span class="badge bg-primary"><i class="bi bi-image"></i> <?= $photoCount ?> ảnh</span>
+                <?php else: ?>
+                  <span class="text-muted">-</span>
+                <?php endif; ?>
+              </td>
               <td>
                 <a href="index.php?act=hdv_journal_edit&id=<?= $item['id'] ?>" class="btn btn-sm btn-warning">
                   <i class="bi bi-pencil"></i> Sửa
@@ -118,7 +151,7 @@ body { background: #f5f6fa; font-family: 'Segoe UI', sans-serif; }
         <h5 class="modal-title">Thêm nhật ký mới</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form action="index.php?act=hdv_journal_store" method="POST">
+      <form action="index.php?act=hdv_journal_store" method="POST" enctype="multipart/form-data">
         <div class="modal-body">
           <input type="hidden" name="guide_id" value="<?= $guide_id ?>">
           <div class="mb-3">
@@ -135,9 +168,38 @@ body { background: #f5f6fa; font-family: 'Segoe UI', sans-serif; }
               <?php endforeach; ?>
             </select>
           </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Số ngày trong tour</label>
+              <input type="number" name="day_number" class="form-control" min="1" placeholder="VD: 1, 2, 3...">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Thời tiết</label>
+              <select name="weather" class="form-select">
+                <option value="">-- Chọn --</option>
+                <option value="sunny">Nắng đẹp</option>
+                <option value="cloudy">Có mây</option>
+                <option value="rainy">Có mưa</option>
+                <option value="windy">Có gió</option>
+              </select>
+            </div>
+          </div>
           <div class="mb-3">
-            <label class="form-label">Ghi chú</label>
+            <label class="form-label">Các hoạt động trong ngày</label>
+            <textarea name="activities" class="form-control" rows="3" placeholder="Liệt kê các hoạt động chính..."></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Ghi chú / Nhật ký</label>
             <textarea name="note" class="form-control" rows="5" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Phản hồi của khách hàng</label>
+            <textarea name="customer_feedback" class="form-control" rows="3" placeholder="Ghi lại phản hồi, ý kiến của khách..."></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Hình ảnh (nếu có)</label>
+            <input type="file" name="photos[]" class="form-control" accept="image/*" multiple>
+            <small class="text-muted">Có thể chọn nhiều ảnh</small>
           </div>
         </div>
         <div class="modal-footer">

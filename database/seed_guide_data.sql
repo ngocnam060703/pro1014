@@ -173,47 +173,155 @@ LIMIT 8;
 -- 5. TẠO NHẬT KÝ MẪU (guide_journal)
 -- ============================================
 -- Lấy một số departure_id và guide_id đã phân công
-SET @ga1 = (SELECT id FROM guide_assign ORDER BY id LIMIT 1);
-SET @ga2 = (SELECT id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 1);
-SET @ga3 = (SELECT id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 2);
-
-SET @gid1 = (SELECT guide_id FROM guide_assign WHERE id = @ga1);
-SET @gid2 = (SELECT guide_id FROM guide_assign WHERE id = @ga2);
-SET @gid3 = (SELECT guide_id FROM guide_assign WHERE id = @ga3);
-
-SET @did1 = (SELECT departure_id FROM guide_assign WHERE id = @ga1);
-SET @did2 = (SELECT departure_id FROM guide_assign WHERE id = @ga2);
-SET @did3 = (SELECT departure_id FROM guide_assign WHERE id = @ga3);
-
 INSERT INTO `guide_journal` (`guide_id`, `departure_id`, `note`, `created_at`)
-VALUES
-(@gid1, @did1, 'Tour diễn ra tốt đẹp. Khách hàng rất hài lòng với dịch vụ. Thời tiết đẹp, không có sự cố gì. Khách tham quan tích cực và tuân thủ quy định.', DATE_SUB(NOW(), INTERVAL 2 DAY)),
-(@gid2, @did2, 'Tour có một số khách đến muộn nhưng đã xử lý kịp thời. Hướng dẫn viên hỗ trợ tốt. Khách hàng phản hồi tích cực về chất lượng tour.', DATE_SUB(NOW(), INTERVAL 1 DAY)),
-(@gid3, @did3, 'Tour hoàn thành thành công. Khách hàng rất thích thú với các điểm tham quan. Cần cải thiện thêm về thời gian nghỉ giữa các điểm.', NOW());
+SELECT guide_id, departure_id, note_text, created_date
+FROM (
+    SELECT 
+        (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1) as guide_id,
+        (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1) as departure_id,
+        'Tour diễn ra tốt đẹp. Khách hàng rất hài lòng với dịch vụ. Thời tiết đẹp, không có sự cố gì. Khách tham quan tích cực và tuân thủ quy định.' as note_text,
+        DATE_SUB(NOW(), INTERVAL 2 DAY) as created_date
+    UNION ALL
+    SELECT 
+        (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 1),
+        (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 1),
+        'Tour có một số khách đến muộn nhưng đã xử lý kịp thời. Hướng dẫn viên hỗ trợ tốt. Khách hàng phản hồi tích cực về chất lượng tour.',
+        DATE_SUB(NOW(), INTERVAL 1 DAY)
+    UNION ALL
+    SELECT 
+        (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 2),
+        (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 2),
+        'Tour hoàn thành thành công. Khách hàng rất thích thú với các điểm tham quan. Cần cải thiện thêm về thời gian nghỉ giữa các điểm.',
+        NOW()
+) AS tmp
+WHERE guide_id IS NOT NULL AND departure_id IS NOT NULL
+LIMIT 3;
 
 -- ============================================
 -- 6. TẠO BÁO CÁO SỰ CỐ MẪU (guide_incidents)
 -- ============================================
+-- Bước 1: Cập nhật dữ liệu cũ nếu có giá trị không hợp lệ
+UPDATE `guide_incidents` 
+SET `severity` = 'low' 
+WHERE `severity` NOT IN ('low', 'medium', 'high') OR `severity` IS NULL;
+
+-- Bước 2: Sửa enum (chỉ chạy nếu bảng đã tồn tại)
+-- Nếu bảng chưa tồn tại, bỏ qua lỗi này
+SET @exist := (SELECT COUNT(*) FROM information_schema.tables 
+               WHERE table_schema = 'travel_system' 
+               AND table_name = 'guide_incidents');
+SET @sqlstmt := IF(@exist > 0,
+    'ALTER TABLE `guide_incidents` MODIFY COLUMN `severity` enum(''low'',''medium'',''high'') DEFAULT ''low''',
+    'SELECT ''Table does not exist'' as message');
+PREPARE stmt FROM @sqlstmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Bước 3: Chèn dữ liệu mẫu sự cố
 INSERT INTO `guide_incidents` (`guide_id`, `departure_id`, `incident_type`, `severity`, `description`, `solution`, `photos`, `created_at`)
-SELECT * FROM (
-    SELECT @gid1 as guide_id, @did1 as departure_id, 
-           'Khách hàng' as incident_type, 'low' as severity,
-           'Một khách hàng bị say xe nhẹ trong quá trình di chuyển' as description,
-           'Đã cung cấp túi nôn và thuốc chống say xe. Khách đã ổn sau 30 phút.' as solution,
-           NULL as photos, DATE_SUB(NOW(), INTERVAL 3 DAY) as created_at
+SELECT guide_id, departure_id, incident_type, severity, description, solution, photos, created_date
+FROM (
+    SELECT 
+        (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1) as guide_id,
+        (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1) as departure_id,
+        'Khách hàng' as incident_type,
+        'low' as severity,
+        'Một khách hàng bị say xe nhẹ trong quá trình di chuyển' as description,
+        'Đã cung cấp túi nôn và thuốc chống say xe. Khách đã ổn sau 30 phút.' as solution,
+        NULL as photos,
+        DATE_SUB(NOW(), INTERVAL 5 DAY) as created_date
     UNION ALL
-    SELECT @gid2, @did2, 'Phương tiện', 'medium',
-           'Xe du lịch bị hỏng điều hòa giữa đường' as description,
-           'Đã gọi xe thay thế. Tour tiếp tục với độ trễ 1 giờ. Đã thông báo và xin lỗi khách hàng.' as solution,
-           NULL, DATE_SUB(NOW(), INTERVAL 2 DAY)
+    SELECT 
+        (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 1),
+        (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 1),
+        'Phương tiện',
+        'high' as severity,
+        'Xe du lịch bị hỏng điều hòa giữa đường' as description,
+        'Đã gọi xe thay thế. Tour tiếp tục với độ trễ 1 giờ. Đã thông báo và xin lỗi khách hàng.' as solution,
+        NULL,
+        DATE_SUB(NOW(), INTERVAL 4 DAY)
     UNION ALL
-    SELECT @gid3, @did3, 'Thời tiết', 'low',
-           'Trời mưa nhẹ ảnh hưởng đến một số hoạt động ngoài trời' as description,
-           'Đã điều chỉnh lịch trình, chuyển sang các hoạt động trong nhà. Khách hàng vẫn hài lòng.' as solution,
-           NULL, DATE_SUB(NOW(), INTERVAL 1 DAY)
+    SELECT 
+        (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 2),
+        (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 2),
+        'Thời tiết',
+        'low' as severity,
+        'Trời mưa nhẹ ảnh hưởng đến một số hoạt động ngoài trời' as description,
+        'Đã điều chỉnh lịch trình, chuyển sang các hoạt động trong nhà. Khách hàng vẫn hài lòng.' as solution,
+        NULL,
+        DATE_SUB(NOW(), INTERVAL 3 DAY)
+    UNION ALL
+    SELECT 
+        (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 3),
+        (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 3),
+        'Khách hàng',
+        'low' as severity,
+        'Một khách hàng quên đồ cá nhân tại khách sạn' as description,
+        'Đã liên hệ với khách sạn để tìm và gửi đồ về địa chỉ khách hàng. Khách hàng rất cảm ơn.' as solution,
+        NULL,
+        DATE_SUB(NOW(), INTERVAL 2 DAY)
+    UNION ALL
+    SELECT 
+        (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 4),
+        (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 4),
+        'Dịch vụ',
+        'low' as severity,
+        'Nhà hàng phục vụ chậm, khách hàng phàn nàn' as description,
+        'Đã trao đổi với quản lý nhà hàng để cải thiện tốc độ phục vụ. Đã xin lỗi khách hàng và bù đắp bằng món tráng miệng miễn phí.' as solution,
+        NULL,
+        DATE_SUB(NOW(), INTERVAL 1 DAY)
+    UNION ALL
+    SELECT 
+        (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1),
+        (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1),
+        'Phương tiện',
+        'low' as severity,
+        'Xe bị kẹt xe do tai nạn trên đường' as description,
+        'Đã thông báo cho khách hàng và điều chỉnh lịch trình. Khách hàng hiểu và đồng ý với thay đổi.' as solution,
+        NULL,
+        DATE_SUB(NOW(), INTERVAL 6 DAY)
+    UNION ALL
+    SELECT 
+        (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 1),
+        (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 1),
+        'Khách hàng',
+        'low' as severity,
+        'Một khách hàng bị dị ứng với thức ăn' as description,
+        'Đã đưa khách đến bệnh viện gần nhất. Khách đã được điều trị và ổn định. Đã thông báo cho công ty và gia đình khách hàng.' as solution,
+        NULL,
+        DATE_SUB(NOW(), INTERVAL 7 DAY)
+    UNION ALL
+    SELECT 
+        (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 2),
+        (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 2),
+        'Dịch vụ',
+        'low' as severity,
+        'Khách sạn không có phòng như đã đặt' as description,
+        'Đã liên hệ với công ty để tìm khách sạn thay thế. Đã tìm được khách sạn tương đương và di chuyển khách hàng. Khách hàng hài lòng với giải pháp.' as solution,
+        NULL,
+        DATE_SUB(NOW(), INTERVAL 8 DAY)
+    UNION ALL
+    SELECT 
+        (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 3),
+        (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 3),
+        'Thời tiết',
+        'low' as severity,
+        'Sương mù dày đặc làm giảm tầm nhìn khi di chuyển' as description,
+        'Đã điều chỉnh tốc độ và thời gian di chuyển để đảm bảo an toàn. Khách hàng được thông báo và đồng ý.' as solution,
+        NULL,
+        DATE_SUB(NOW(), INTERVAL 9 DAY)
+    UNION ALL
+    SELECT 
+        (SELECT guide_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 4),
+        (SELECT departure_id FROM guide_assign ORDER BY id LIMIT 1 OFFSET 4),
+        'Khách hàng',
+        'low' as severity,
+        'Một nhóm khách đi lạc trong khu vực tham quan' as description,
+        'Đã liên hệ với ban quản lý khu vực và tìm thấy nhóm khách sau 30 phút. Đã nhắc nhở khách về việc đi theo đoàn.' as solution,
+        NULL,
+        DATE_SUB(NOW(), INTERVAL 10 DAY)
 ) AS tmp
-WHERE guide_id IS NOT NULL AND departure_id IS NOT NULL
-LIMIT 3;
+WHERE guide_id IS NOT NULL AND departure_id IS NOT NULL;
 
 -- ============================================
 -- HOÀN THÀNH

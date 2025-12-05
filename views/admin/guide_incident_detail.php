@@ -106,7 +106,23 @@ if (session_status() == PHP_SESSION_NONE) session_start();
             <!-- Mức độ -->
             <div class="mb-3">
                 <label class="form-label fw-semibold">Mức độ</label>
-                <input type="text" class="form-control" value="<?= $incident['severity'] ?>" readonly>
+                <?php
+                  $severity = $incident['severity'] ?? 'low';
+                  $badgeClass = [
+                    'low' => 'badge bg-info',
+                    'medium' => 'badge bg-warning',
+                    'high' => 'badge bg-danger'
+                  ];
+                  $badge = $badgeClass[$severity] ?? 'badge bg-secondary';
+                  $severityText = [
+                    'low' => 'Thấp',
+                    'medium' => 'Trung bình',
+                    'high' => 'Cao'
+                  ];
+                ?>
+                <div>
+                  <span class="<?= $badge ?> fs-6"><?= $severityText[$severity] ?? ucfirst($severity) ?></span>
+                </div>
             </div>
 
             <!-- Mô tả -->

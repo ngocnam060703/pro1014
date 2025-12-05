@@ -72,9 +72,9 @@ body { background: #f5f6fa; font-family: 'Segoe UI', sans-serif; }
           <div class="col-md-6 mb-3">
             <label class="form-label">Mức độ</label>
             <select name="severity" class="form-select" required>
-              <option value="low" <?= $incident['severity'] == 'low' ? 'selected' : '' ?>>Thấp</option>
-              <option value="medium" <?= $incident['severity'] == 'medium' ? 'selected' : '' ?>>Trung bình</option>
-              <option value="high" <?= $incident['severity'] == 'high' ? 'selected' : '' ?>>Cao</option>
+              <option value="low" <?= ($incident['severity'] == 'low' || $incident['severity'] == 'thấp') ? 'selected' : '' ?>>Thấp</option>
+              <option value="medium" <?= ($incident['severity'] == 'medium' || $incident['severity'] == 'trung bình' || $incident['severity'] == 'Trung bình') ? 'selected' : '' ?>>Trung bình</option>
+              <option value="high" <?= ($incident['severity'] == 'high' || $incident['severity'] == 'cao' || $incident['severity'] == 'Cao') ? 'selected' : '' ?>>Cao</option>
             </select>
           </div>
         </div>

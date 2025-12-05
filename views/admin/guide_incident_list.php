@@ -125,7 +125,23 @@ body {
               <td class="fw-semibold text-primary"><?= $i['guide_name'] ?></td>
               <td><?= $i['departure_name'] ?></td>
               <td><?= $i['incident_type'] ?></td>
-              <td class="fw-bold text-danger"><?= $i['severity'] ?></td>
+              <td>
+                <?php
+                  $severity = $i['severity'] ?? 'low';
+                  $badgeClass = [
+                    'low' => 'badge bg-info',
+                    'medium' => 'badge bg-warning',
+                    'high' => 'badge bg-danger'
+                  ];
+                  $badge = $badgeClass[$severity] ?? 'badge bg-secondary';
+                  $severityText = [
+                    'low' => 'Thấp',
+                    'medium' => 'Trung bình',
+                    'high' => 'Cao'
+                  ];
+                  echo '<span class="' . $badge . '">' . ($severityText[$severity] ?? ucfirst($severity)) . '</span>';
+                ?>
+              </td>
               <td><?= $i['description'] ?></td>
               <td><?= $i['solution'] ?></td>
 

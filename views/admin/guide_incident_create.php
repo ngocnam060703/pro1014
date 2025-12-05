@@ -124,9 +124,9 @@ if (session_status() == PHP_SESSION_NONE) session_start();
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Mức độ</label>
                     <select name="severity" class="form-select" required>
-                        <option value="Thấp">Thấp</option>
-                        <option value="Trung bình">Trung bình</option>
-                        <option value="Cao">Cao</option>
+                        <option value="low">Thấp</option>
+                        <option value="medium">Trung bình</option>
+                        <option value="high">Cao</option>
                     </select>
                 </div>
 
