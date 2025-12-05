@@ -41,9 +41,9 @@ class GuideScheduleModel {
                     b.*,
                     t.title AS tour_title
                 FROM bookings b
-                INNER JOIN departures d ON b.departure_id = d.id
-                INNER JOIN tours t ON d.tour_id = t.id
-                WHERE b.departure_id = ? AND b.status != 'cancelled'
+                INNER JOIN departures d ON b.tour_id = d.tour_id
+                INNER JOIN tours t ON b.tour_id = t.id
+                WHERE d.id = ? AND b.status != 'cancelled'
                 ORDER BY b.created_at ASC";
         return pdo_query($sql, $departure_id);
     }

@@ -89,14 +89,14 @@ body { background: #f5f6fa; font-family: 'Segoe UI', sans-serif; }
               <td><?= htmlspecialchars($item['tour_name'] ?? $item['departure_name'] ?? 'N/A') ?></td>
               <td><?= $item['departure_time'] ? date('d/m/Y H:i', strtotime($item['departure_time'])) : 'N/A' ?></td>
               <td>
-                <?php if($item['day_number']): ?>
-                  <span class="badge bg-info">Ngày <?= $item['day_number'] ?></span>
+                <?php if(!empty($item['day_number'] ?? null)): ?>
+                  <span class="badge bg-info">Ngày <?= htmlspecialchars($item['day_number']) ?></span>
                 <?php else: ?>
                   <span class="text-muted">-</span>
                 <?php endif; ?>
               </td>
               <td>
-                <?php if($item['activities']): ?>
+                <?php if(!empty($item['activities'] ?? null)): ?>
                   <small><?= htmlspecialchars(substr($item['activities'], 0, 50)) . (strlen($item['activities']) > 50 ? '...' : '') ?></small>
                 <?php else: ?>
                   <span class="text-muted">-</span>
@@ -104,12 +104,12 @@ body { background: #f5f6fa; font-family: 'Segoe UI', sans-serif; }
               </td>
               <td>
                 <small><?= htmlspecialchars(substr($item['note'] ?? '', 0, 80)) . (strlen($item['note'] ?? '') > 80 ? '...' : '') ?></small>
-                <?php if($item['customer_feedback']): ?>
+                <?php if(!empty($item['customer_feedback'] ?? null)): ?>
                   <br><span class="badge bg-success">Có phản hồi KH</span>
                 <?php endif; ?>
               </td>
               <td>
-                <?php if($item['photos']): ?>
+                <?php if(!empty($item['photos'] ?? null)): ?>
                   <?php 
                     $photos = explode(',', $item['photos']);
                     $photoCount = count($photos);
