@@ -134,25 +134,53 @@ body {
                 <p><strong>Tour:</strong> <?= htmlspecialchars($schedule['tour_name'] ?? 'N/A') ?></p>
                 <p><strong>Ngày khởi hành:</strong> 
                     <?php if (!empty($schedule['departure_date'])): ?>
-                        <?= date('d/m/Y', strtotime($schedule['departure_date'])) ?>
+                        📅 <?= date('d/m/Y', strtotime($schedule['departure_date'])) ?>
+                        <?php 
+                        // Hiển thị thứ trong tuần
+                        $dayOfWeek = date('w', strtotime($schedule['departure_date']));
+                        $days = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+                        echo '(' . $days[$dayOfWeek] . ')';
+                        ?>
                     <?php elseif (!empty($schedule['departure_time'])): ?>
-                        <?= date('d/m/Y', strtotime($schedule['departure_time'])) ?>
+                        📅 <?= date('d/m/Y', strtotime($schedule['departure_time'])) ?>
+                        <?php 
+                        // Hiển thị thứ trong tuần
+                        $dayOfWeek = date('w', strtotime($schedule['departure_time']));
+                        $days = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+                        echo '(' . $days[$dayOfWeek] . ')';
+                        ?>
                     <?php else: ?>
-                        N/A
+                        <span class="text-muted">Chưa có thông tin</span>
                     <?php endif; ?>
                 </p>
                 <p><strong>Giờ xuất phát:</strong> 
                     <?php if (!empty($schedule['departure_time'])): ?>
-                        <?= date('H:i', strtotime($schedule['departure_time'])) ?>
+                        ⏰ <?= date('H:i', strtotime($schedule['departure_time'])) ?>
                     <?php else: ?>
-                        N/A
+                        <span class="text-muted">Chưa có thông tin</span>
                     <?php endif; ?>
                 </p>
                 <p><strong>Ngày kết thúc:</strong> 
-                    <?= !empty($schedule['end_date']) ? date('d/m/Y', strtotime($schedule['end_date'])) : 'N/A' ?>
+                    <?php if (!empty($schedule['end_date'])): ?>
+                        📅 <?= date('d/m/Y', strtotime($schedule['end_date'])) ?>
+                        <?php 
+                        // Hiển thị thứ trong tuần
+                        $dayOfWeek = date('w', strtotime($schedule['end_date']));
+                        $days = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+                        echo '(' . $days[$dayOfWeek] . ')';
+                        ?>
+                    <?php else: ?>
+                        <span class="text-muted">Chưa có thông tin</span>
+                    <?php endif; ?>
                 </p>
                 <p><strong>Giờ kết thúc:</strong> 
-                    <?= !empty($schedule['end_time']) ? $schedule['end_time'] : 'N/A' ?>
+                    <?php if (!empty($schedule['end_time'])): ?>
+                        ⏰ <?= date('H:i', strtotime($schedule['end_time'])) ?>
+                    <?php elseif (!empty($schedule['end_date'])): ?>
+                        <span class="text-muted">Chưa có thông tin giờ</span>
+                    <?php else: ?>
+                        <span class="text-muted">Chưa có thông tin</span>
+                    <?php endif; ?>
                 </p>
             </div>
             <div class="col-md-6">
@@ -176,6 +204,100 @@ body {
                 <p class="text-muted"><?= nl2br(htmlspecialchars($schedule['notes'])) ?></p>
             </div>
         <?php endif; ?>
+    </div>
+
+    <!-- Danh sách khách đã đặt -->
+    <div class="card p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5><i class="bi bi-person-check"></i> Danh sách khách đã đặt</h5>
+            <div>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                    <i class="bi bi-plus-circle"></i> Thêm khách thủ công
+                </button>
+                <a href="index.php?act=schedule-export-customers&id=<?= $schedule['id'] ?>" class="btn btn-success btn-sm">
+                    <i class="bi bi-file-earmark-excel"></i> Xuất danh sách
+                </a>
+                <button type="button" class="btn btn-info btn-sm" onclick="printAttendanceList()">
+                    <i class="bi bi-printer"></i> In danh sách điểm danh
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>STT</th>
+                        <th>Họ tên</th>
+                        <th>SĐT</th>
+                        <th>Email</th>
+                        <th>Số lượng khách</th>
+                        <th>Trạng thái thanh toán</th>
+                        <th>Ghi chú</th>
+                        <th>Thời gian đặt</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($bookings)): ?>
+                        <?php $stt = 1; foreach ($bookings as $booking): ?>
+                        <tr>
+                            <td><?= $stt++ ?></td>
+                            <td class="fw-semibold"><?= htmlspecialchars($booking['customer_name']) ?></td>
+                            <td><?= htmlspecialchars($booking['customer_phone']) ?></td>
+                            <td><?= htmlspecialchars($booking['customer_email']) ?></td>
+                            <td class="text-center">
+                                <span class="badge bg-info">
+                                    <?= $booking['num_people'] ?> người
+                                    <?php if ($booking['num_adults'] > 0): ?>
+                                        (<?= $booking['num_adults'] ?> lớn
+                                        <?php if ($booking['num_children'] > 0): ?>, <?= $booking['num_children'] ?> trẻ<?php endif; ?>
+                                        <?php if ($booking['num_infants'] > 0): ?>, <?= $booking['num_infants'] ?> em bé<?php endif; ?>)
+                                    <?php endif; ?>
+                                </span>
+                            </td>
+                            <td>
+                                <?php
+                                $paymentStatus = $booking['payment_status'] ?? 'pending';
+                                $paymentBadges = [
+                                    'pending' => '<span class="badge bg-warning">Chưa thanh toán</span>',
+                                    'partial' => '<span class="badge bg-info">Đã cọc</span>',
+                                    'paid' => '<span class="badge bg-success">Đã thanh toán</span>',
+                                    'refunded' => '<span class="badge bg-secondary">Đã hoàn tiền</span>'
+                                ];
+                                echo $paymentBadges[$paymentStatus] ?? '<span class="badge bg-secondary">N/A</span>';
+                                ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($booking['notes'])): ?>
+                                    <small><?= htmlspecialchars($booking['notes']) ?></small>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <small>
+                                    <?= date('d/m/Y H:i', strtotime($booking['created_at'])) ?>
+                                </small>
+                            </td>
+                            <td>
+                                <a href="index.php?act=booking-detail&id=<?= $booking['id'] ?>" 
+                                   class="btn btn-sm btn-info" title="Chi tiết">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-3">
+                                <i class="bi bi-info-circle"></i> Chưa có khách đặt tour cho lịch trình này
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div class="row">
@@ -330,7 +452,7 @@ body {
                     
                     <div class="mb-3">
                         <label class="form-label">Loại nhân sự <span class="text-danger">*</span></label>
-                        <select name="staff_type" class="form-select" required>
+                        <select name="staff_type" class="form-select" required onchange="checkStaffScheduleConflict()">
                             <option value="guide">Hướng dẫn viên</option>
                             <option value="driver">Tài xế</option>
                             <option value="logistics">Nhân viên hậu cần</option>
@@ -341,7 +463,7 @@ body {
 
                     <div class="mb-3">
                         <label class="form-label">Chọn HDV (nếu là HDV)</label>
-                        <select name="staff_id" class="form-select" id="staff_id_select">
+                        <select name="staff_id" class="form-select" id="staff_id_select" onchange="checkStaffScheduleConflict()">
                             <option value="">-- Chọn HDV --</option>
                             <?php foreach ($availableGuides as $guide): ?>
                                 <option value="<?= $guide['id'] ?>">
@@ -350,6 +472,9 @@ body {
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                        <small class="form-text text-muted">
+                            <span id="staff-conflict-hint"></span>
+                        </small>
                     </div>
 
                     <div class="mb-3">
@@ -382,7 +507,13 @@ body {
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Ngày kết thúc</label>
-                                <input type="date" name="end_date" class="form-control">
+                                <input type="date" name="end_date" id="end_date_<?= uniqid() ?>" class="form-control" 
+                                       min="<?= date('Y-m-d') ?>" 
+                                       onchange="validateEndDate(this)">
+                                <small class="form-text text-muted">
+                                  <span class="end-date-hint">Ngày kết thúc phải >= ngày hiện tại</span>
+                                </small>
+                                <small class="form-text text-muted">Không được chọn ngày quá khứ</small>
                             </div>
                         </div>
                     </div>
@@ -646,7 +777,13 @@ body {
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Ngày kết thúc</label>
-                                <input type="date" name="end_date" class="form-control">
+                                <input type="date" name="end_date" id="end_date_<?= uniqid() ?>" class="form-control" 
+                                       min="<?= date('Y-m-d') ?>" 
+                                       onchange="validateEndDate(this)">
+                                <small class="form-text text-muted">
+                                  <span class="end-date-hint">Ngày kết thúc phải >= ngày hiện tại</span>
+                                </small>
+                                <small class="form-text text-muted">Không được chọn ngày quá khứ</small>
                             </div>
                         </div>
                     </div>
@@ -698,6 +835,41 @@ body {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Modal thêm khách thủ công -->
+    <div class="modal fade" id="addCustomerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-person-plus"></i> Thêm khách thủ công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="index.php?act=booking-create" method="GET">
+                    <input type="hidden" name="act" value="booking-create">
+                    <input type="hidden" name="departure_id" value="<?= $schedule['id'] ?>">
+                    <input type="hidden" name="tour_id" value="<?= $schedule['tour_id'] ?>">
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Bạn sẽ được chuyển đến trang tạo booking với thông tin lịch trình đã được điền sẵn.
+                        </div>
+                        <p><strong>Tour:</strong> <?= htmlspecialchars($schedule['tour_name']) ?></p>
+                        <p><strong>Ngày khởi hành:</strong> 
+                            <?php if (!empty($schedule['departure_time'])): ?>
+                                <?= date('d/m/Y H:i', strtotime($schedule['departure_time'])) ?>
+                            <?php else: ?>
+                                Chưa có
+                            <?php endif; ?>
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Tiếp tục tạo booking</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 // Hiển thị/ẩn chi tiết theo loại dịch vụ
 document.getElementById('service_type_select').addEventListener('change', function() {
@@ -705,6 +877,182 @@ document.getElementById('service_type_select').addEventListener('change', functi
     document.getElementById('transport_details').style.display = serviceType === 'transport' ? 'block' : 'none';
     document.getElementById('hotel_details').style.display = serviceType === 'hotel' ? 'block' : 'none';
     document.getElementById('flight_details').style.display = serviceType === 'flight' ? 'block' : 'none';
+});
+
+// Validate ngày kết thúc phải >= ngày hiện tại
+function validateEndDate(input) {
+    const endDate = input.value;
+    const hint = input.parentElement.querySelector('.end-date-hint');
+    
+    if (!endDate) {
+        if (hint) {
+            hint.textContent = 'Ngày kết thúc phải >= ngày hiện tại';
+            hint.className = 'text-muted end-date-hint';
+        }
+        input.setCustomValidity('');
+        return;
+    }
+    
+    const selectedDate = new Date(endDate);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < now) {
+        if (hint) {
+            hint.textContent = '⚠️ Ngày kết thúc phải >= ngày hiện tại!';
+            hint.className = 'text-danger end-date-hint';
+        }
+        input.setCustomValidity('Ngày kết thúc phải >= ngày hiện tại');
+    } else {
+        if (hint) {
+            hint.textContent = '✓ Ngày kết thúc hợp lệ';
+            hint.className = 'text-success end-date-hint';
+        }
+        input.setCustomValidity('');
+    }
+}
+
+// In danh sách điểm danh
+function printAttendanceList() {
+    const printWindow = window.open('', '_blank');
+    const bookings = <?= json_encode($bookings ?? []) ?>;
+    const schedule = <?= json_encode($schedule) ?>;
+    
+    let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Danh sách điểm danh - ${schedule.tour_name || 'Tour'}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                h2 { text-align: center; margin-bottom: 10px; }
+                .info { text-align: center; margin-bottom: 20px; color: #666; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; font-weight: bold; }
+                .signature { margin-top: 50px; }
+                .signature-row { display: flex; justify-content: space-around; margin-top: 30px; }
+                .signature-box { text-align: center; width: 200px; }
+            </style>
+        </head>
+        <body>
+            <h2>DANH SÁCH ĐIỂM DANH</h2>
+            <div class="info">
+                <p><strong>Tour:</strong> ${schedule.tour_name || 'N/A'}</p>
+                <p><strong>Ngày khởi hành:</strong> ${schedule.departure_time ? new Date(schedule.departure_time).toLocaleDateString('vi-VN') : 'N/A'}</p>
+                <p><strong>Tổng số khách:</strong> ${bookings.length} booking</p>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Họ tên</th>
+                        <th>SĐT</th>
+                        <th>Số lượng khách</th>
+                        <th>Điểm danh</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    let totalPeople = 0;
+    bookings.forEach((booking, index) => {
+        totalPeople += parseInt(booking.num_people || 0);
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${booking.customer_name || ''}</td>
+                <td>${booking.customer_phone || ''}</td>
+                <td>${booking.num_people || 0} người</td>
+                <td style="height: 30px;"></td>
+                <td></td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3">TỔNG CỘNG</th>
+                        <th>${totalPeople} người</th>
+                        <th colspan="2"></th>
+                    </tr>
+                </tfoot>
+            </table>
+            <div class="signature">
+                <div class="signature-row">
+                    <div class="signature-box">
+                        <p>Người lập danh sách</p>
+                        <p style="margin-top: 50px;">(Ký, ghi rõ họ tên)</p>
+                    </div>
+                    <div class="signature-box">
+                        <p>Hướng dẫn viên</p>
+                        <p style="margin-top: 50px;">(Ký, ghi rõ họ tên)</p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+    
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// Kiểm tra trùng lịch khi chọn hướng dẫn viên
+function checkStaffScheduleConflict() {
+    const staffType = document.querySelector('select[name="staff_type"]').value;
+    const staffId = document.getElementById('staff_id_select').value;
+    const departureId = document.querySelector('input[name="departure_id"]').value;
+    const hint = document.getElementById('staff-conflict-hint');
+    
+    if (staffType !== 'guide' || !staffId || !departureId) {
+        hint.textContent = '';
+        return;
+    }
+    
+    // Gọi AJAX để kiểm tra trùng lịch
+    fetch('index.php?act=staff-assignment-check-conflict&staff_id=' + staffId + '&departure_id=' + departureId)
+        .then(response => response.json())
+        .then(data => {
+            if (data.has_conflict) {
+                hint.textContent = '⚠️ ' + data.message;
+                hint.className = 'form-text text-danger';
+            } else {
+                hint.textContent = '✓ Hướng dẫn viên có thể được phân công';
+                hint.className = 'form-text text-success';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+// Validate form trước khi submit
+document.querySelector('form[action*="staff-assignment-store"]')?.addEventListener('submit', function(e) {
+    const staffType = document.querySelector('select[name="staff_type"]').value;
+    const staffId = document.getElementById('staff_id_select').value;
+    const departureId = document.querySelector('input[name="departure_id"]').value;
+    
+    if (staffType === 'guide' && staffId && departureId) {
+        fetch('index.php?act=staff-assignment-check-conflict&staff_id=' + staffId + '&departure_id=' + departureId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.has_conflict) {
+                    e.preventDefault();
+                    alert(data.message);
+                    return false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
 });
 </script>
 </body>

@@ -89,11 +89,7 @@ body {
         <i class="bi bi-exclamation-triangle"></i> Danh sách sự cố HDV
       </h3>
 
-      <div class="d-flex gap-2">
-        <a href="index.php?act=guide-incident-create" class="btn btn-primary">
-          <i class="bi bi-plus-circle"></i> Thêm sự cố
-        </a>
-
+      <div>
         <a href="index.php?act=dashboard" class="btn btn-secondary">
           <i class="bi bi-arrow-left-circle"></i> Quay lại Dashboard
         </a>

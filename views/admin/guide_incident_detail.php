@@ -93,9 +93,9 @@ if (session_status() == PHP_SESSION_NONE) session_start();
 
             <!-- Chuyến đi -->
             <div class="mb-3">
-                <label class="form-label fw-semibold">Chuyến đi</label>
+                <label class="form-label fw-semibold">Địa điểm</label>
                 <input type="text" class="form-control"
-                    value="<?= $incident['tour_title'] . ' - ' . $incident['departure_time'] ?>" readonly>
+                    value="<?= htmlspecialchars($incident['tour_title']) ?>" readonly>
             </div>
 
             <!-- Loại sự cố -->

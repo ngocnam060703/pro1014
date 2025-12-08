@@ -22,7 +22,35 @@ class AdminBookingController {
 
     // Lưu booking mới
     public function bookingStore() {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        
         $data = $_POST;
+        
+        // Kiểm tra ngày đặt tour không được quá khứ
+        if (!empty($data['booking_date'])) {
+            $bookingDate = strtotime($data['booking_date']);
+            $now = strtotime(date('Y-m-d'));
+            
+            if ($bookingDate < $now) {
+                $_SESSION['error'] = "Vui lòng chọn ngày đặt tour trong tương lai.";
+                header("Location: index.php?act=booking-create");
+                exit();
+            }
+        }
+        
+        // Kiểm tra ngày khởi hành không được quá khứ
+        if (!empty($data['departure_date'])) {
+            $departureDate = strtotime($data['departure_date']);
+            $now = strtotime(date('Y-m-d'));
+            
+            if ($departureDate < $now) {
+                $_SESSION['error'] = "Vui lòng chọn ngày khởi hành trong tương lai.";
+                header("Location: index.php?act=booking-create");
+                exit();
+            }
+        }
         
         // Đảm bảo booking_type có giá trị mặc định
         if (!isset($data['booking_type']) || empty($data['booking_type'])) {

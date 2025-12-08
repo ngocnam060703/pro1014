@@ -121,78 +121,167 @@ body {
         <?php unset($_SESSION['error']); ?>
     <?php endif; ?>
 
+    <!-- Tìm kiếm theo mã lịch trình -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <form method="GET" action="index.php">
+          <input type="hidden" name="act" value="schedule">
+          
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label"><i class="bi bi-search"></i> Tìm kiếm theo mã lịch trình</label>
+              <input type="text" name="search_id" class="form-control" 
+                     placeholder="Nhập mã lịch trình (ID)..." 
+                     value="<?= htmlspecialchars($_GET['search_id'] ?? '') ?>">
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+              <button type="submit" class="btn btn-primary me-2">
+                <i class="bi bi-search"></i> Tìm kiếm
+              </button>
+              <?php if (!empty($_GET['search_id'])): ?>
+                <a href="index.php?act=schedule" class="btn btn-secondary">
+                  <i class="bi bi-x-circle"></i> Xóa bộ lọc
+                </a>
+              <?php endif; ?>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-body p-4">
-
-        <table class="table table-bordered table-hover align-middle">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Tên Tour</th>
-              <th>Ngày & giờ khởi hành</th>
-              <th>Điểm tập trung</th>
-              <th>Số chỗ còn</th>
-              <th>Ghi chú</th>
-              <th class="text-center">Hành động</th>
-            </tr>
-          </thead>
-
-          <tbody>
-          <?php if (!empty($listSchedule)): ?>
-            <?php foreach ($listSchedule as $schedule): ?>
-            <tr>
-              <td><?= $schedule['id'] ?></td>
-
-              <td class="fw-semibold text-primary">
-                <?= $schedule['tour_name'] ?? '—' ?>
-              </td>
-
-              <td>
-                <?php if (!empty($schedule['departure_time'])): ?>
-                  📅 <?= date('d/m/Y', strtotime($schedule['departure_time'])) ?><br>
-                  ⏰ <?= date('H:i', strtotime($schedule['departure_time'])) ?>
-                <?php else: ?>
-                  —
-                <?php endif; ?>
-              </td>
-
-              <td><?= $schedule['meeting_point'] ?></td>
-              <td class="text-center fw-bold text-success"><?= $schedule['seats_available'] ?></td>
-              <td><?= $schedule['notes'] ?></td>
-
-              <td class="text-center">
-                <a href="index.php?act=schedule-detail&id=<?= $schedule['id'] ?>" 
-                   class="btn btn-info btn-sm me-1" title="Chi tiết">
-                  <i class="bi bi-eye"></i>
-                </a>
-                <a href="index.php?act=schedule-edit&id=<?= $schedule['id'] ?>" 
-                   class="btn btn-warning btn-sm me-1" title="Sửa">
-                  <i class="bi bi-pencil"></i>
-                </a>
-
-                <a href="index.php?act=schedule-delete&id=<?= $schedule['id'] ?>" 
-                   onclick="return confirm('Bạn có chắc chắn muốn xóa lịch trình ID <?= $schedule['id'] ?> không?')" 
-                   class="btn btn-danger btn-sm" title="Xóa">
-                  <i class="bi bi-trash"></i>
-                </a>
-              </td>
-            </tr>
-            <?php endforeach; ?>
-          <?php else: ?>
-            <tr>
-              <td colspan="7" class="text-center text-muted py-3">
-                <i class="bi bi-info-circle"></i> Hiện chưa có lịch trình nào
-              </td>
-            </tr>
-          <?php endif; ?>
-          </tbody>
-        </table>
-
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Mã lịch trình</th>
+                <th>Địa điểm</th>
+                <th>Ngày khởi hành</th>
+                <th>Ngày kết thúc</th>
+                <th>Số ngày - Số đêm</th>
+                <th>Số khách đã đặt / Tối đa</th>
+                <th>Hướng dẫn viên</th>
+                <th>Phương tiện</th>
+                <th>Trạng thái</th>
+                <th class="text-center">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+            <?php 
+            // Hàm hiển thị trạng thái
+            function getStatusBadge($status) {
+                $statuses = [
+                    'open' => ['label' => 'Đang mở bán', 'class' => 'success'],
+                    'upcoming' => ['label' => 'Sắp khởi hành', 'class' => 'info'],
+                    'in_progress' => ['label' => 'Đang chạy', 'class' => 'primary'],
+                    'completed' => ['label' => 'Đã hoàn thành', 'class' => 'secondary'],
+                    'cancelled' => ['label' => 'Đã hủy', 'class' => 'danger'],
+                    'scheduled' => ['label' => 'Đang mở bán', 'class' => 'success'],
+                    'confirmed' => ['label' => 'Sắp khởi hành', 'class' => 'info']
+                ];
+                $statusInfo = $statuses[$status] ?? ['label' => $status, 'class' => 'secondary'];
+                return '<span class="badge bg-' . $statusInfo['class'] . '">' . $statusInfo['label'] . '</span>';
+            }
+            ?>
+            <?php if (!empty($listSchedule)): ?>
+              <?php foreach ($listSchedule as $schedule): ?>
+              <tr>
+                <td class="fw-bold">#<?= $schedule['id'] ?></td>
+                <td class="fw-semibold text-primary">
+                  <?= htmlspecialchars($schedule['tour_name'] ?? '—') ?>
+                </td>
+                <td>
+                  <?php if (!empty($schedule['departure_time'])): ?>
+                    📅 <?= date('d/m/Y', strtotime($schedule['departure_time'])) ?><br>
+                    ⏰ <?= date('H:i', strtotime($schedule['departure_time'])) ?>
+                  <?php else: ?>
+                    —
+                  <?php endif; ?>
+                </td>
+                <td>
+                  <?php if (!empty($schedule['end_date'])): ?>
+                    📅 <?= date('d/m/Y', strtotime($schedule['end_date'])) ?>
+                  <?php elseif (!empty($schedule['departure_time'])): ?>
+                    <?= date('d/m/Y', strtotime($schedule['departure_time'])) ?>
+                  <?php else: ?>
+                    —
+                  <?php endif; ?>
+                </td>
+                <td class="text-center">
+                  <?php 
+                  $days = $schedule['days_count'] ?? 0;
+                  $nights = $schedule['nights_count'] ?? 0;
+                  if ($days > 0 || $nights > 0):
+                  ?>
+                    <span class="badge bg-info"><?= $days ?> ngày</span>
+                    <?php if ($nights > 0): ?>
+                      <span class="badge bg-secondary"><?= $nights ?> đêm</span>
+                    <?php endif; ?>
+                  <?php else: ?>
+                    —
+                  <?php endif; ?>
+                </td>
+                <td class="text-center">
+                  <span class="fw-bold text-warning"><?= $schedule['seats_booked'] ?? 0 ?></span>
+                  <span class="text-muted">/</span>
+                  <span class="fw-bold text-success"><?= $schedule['total_seats'] ?? 0 ?></span>
+                </td>
+                <td>
+                  <?php if (!empty($schedule['guide_names'])): ?>
+                    <small><?= htmlspecialchars($schedule['guide_names']) ?></small>
+                  <?php else: ?>
+                    <span class="text-muted">—</span>
+                  <?php endif; ?>
+                </td>
+                <td>
+                  <?php if (!empty($schedule['vehicles'])): ?>
+                    <small><?= htmlspecialchars($schedule['vehicles']) ?></small>
+                  <?php else: ?>
+                    <span class="text-muted">—</span>
+                  <?php endif; ?>
+                </td>
+                <td>
+                  <?= getStatusBadge($schedule['status'] ?? 'scheduled') ?>
+                </td>
+                <td class="text-center">
+                  <a href="index.php?act=schedule-detail&id=<?= $schedule['id'] ?>" 
+                     class="btn btn-info btn-sm me-1" title="Chi tiết">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                  <a href="index.php?act=schedule-edit&id=<?= $schedule['id'] ?>" 
+                     class="btn btn-warning btn-sm me-1" title="Sửa">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <a href="index.php?act=schedule-delete&id=<?= $schedule['id'] ?>" 
+                     onclick="return confirm('Bạn có chắc chắn muốn xóa lịch trình ID <?= $schedule['id'] ?> không?')" 
+                     class="btn btn-danger btn-sm" title="Xóa">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </td>
+              </tr>
+              <?php endforeach; ?>
+            <?php else: ?>
+              <tr>
+                <td colspan="10" class="text-center text-muted py-3">
+                  <i class="bi bi-info-circle"></i> 
+                  <?php if (!empty($_GET['search_id'])): ?>
+                    Không tìm thấy lịch trình với mã <?= htmlspecialchars($_GET['search_id']) ?>
+                  <?php else: ?>
+                    Hiện chưa có lịch trình nào
+                  <?php endif; ?>
+                </td>
+              </tr>
+            <?php endif; ?>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

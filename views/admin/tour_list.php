@@ -110,7 +110,8 @@ body {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Tên Tour</th>
+              <th>Mã Tour</th>
+              <th>Địa điểm</th>
               <th>Danh mục</th>
               <th>Điểm khởi hành</th>
               <th>Giá</th>
@@ -137,6 +138,7 @@ body {
             ?>
             <tr>
               <td><?= $tour['id'] ?></td>
+              <td class="fw-bold text-info"><?= htmlspecialchars($tour['tour_code'] ?? '-') ?></td>
               <td class="fw-semibold text-primary"><?= $tour['title'] ?></td>
               <td>
                 <span class="badge bg-<?= $categoryInfo['badge'] ?>">
@@ -148,6 +150,9 @@ body {
               <td class="fw-bold"><?= $tour['slots'] ?></td>
 
               <td class="text-center">
+                <a href="index.php?act=tour-detail&id=<?= $tour['id'] ?>" class="btn btn-info btn-sm me-1" title="Xem chi tiết">
+                  <i class="bi bi-eye"></i>
+                </a>
                 <a href="index.php?act=tour-edit&id=<?= $tour['id'] ?>" class="btn btn-warning btn-sm me-1">
                   <i class="bi bi-pencil"></i>
                 </a>
@@ -156,8 +161,8 @@ body {
                    class="btn btn-danger btn-sm me-1">
                   <i class="bi bi-trash"></i>
                 </a>
-                <a href="index.php?act=lich&tour_id=<?= $tour['id'] ?>" class="btn btn-success btn-sm">
-                  <i class="bi bi-calendar-plus"></i>
+                <a href="index.php?act=lich&tour_id=<?= $tour['id'] ?>" class="btn btn-success btn-sm" title="Xem lịch trình">
+                  <i class="bi bi-calendar-check"></i> Lịch trình
                 </a>
               </td>
             </tr>
