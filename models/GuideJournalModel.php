@@ -20,39 +20,42 @@ class GuideJournalModel {
         return pdo_query_one($sql, $id);
     }
 
-    public function store($data) {
-        $sql = "INSERT INTO guide_journal (guide_id, departure_id, note, day_number, activities, photos, customer_feedback, weather, mood)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        return pdo_execute($sql,
-            $data['guide_id'],
-            $data['departure_id'],
-            $data['note'],
-            $data['day_number'] ?? null,
-            $data['activities'] ?? null,
-            $data['photos'] ?? null,
-            $data['customer_feedback'] ?? null,
-            $data['weather'] ?? null,
-            $data['mood'] ?? null
-        );
-    }
+   public function store($data) {
+    $sql = "INSERT INTO guide_journal 
+            (day_number, guide_id, departure_id, note, activities, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
+
+    return pdo_execute($sql,
+        $data['day_number'] ?? null,
+        $data['guide_id'],
+        $data['departure_id'],
+        $data['note'],
+        $data['activities'] ?? null
+    );
+}
 
     public function updateData($id, $data) {
-        $sql = "UPDATE guide_journal
-                SET guide_id=?, departure_id=?, note=?, day_number=?, activities=?, photos=?, customer_feedback=?, weather=?, mood=?
-                WHERE id=?";
-        return pdo_execute($sql,
-            $data['guide_id'],
-            $data['departure_id'],
-            $data['note'],
-            $data['day_number'] ?? null,
-            $data['activities'] ?? null,
-            $data['photos'] ?? null,
-            $data['customer_feedback'] ?? null,
-            $data['weather'] ?? null,
-            $data['mood'] ?? null,
-            $id
-        );
-    }
+    $sql = "UPDATE guide_journal
+            SET 
+                day_number = ?, 
+                guide_id = ?, 
+                departure_id = ?, 
+                note = ?, 
+                activities = ?, 
+                updated_at = NOW()
+            WHERE id = ?";
+
+    return pdo_execute($sql,
+        $data['day_number'] ?? null,
+        $data['guide_id'],
+        $data['departure_id'],
+        $data['note'],
+        $data['activities'] ?? null,
+        $id
+    );
+}
+
+
 
     public function delete($id) {
         $sql = "DELETE FROM guide_journal WHERE id = ?";
