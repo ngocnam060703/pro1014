@@ -158,7 +158,7 @@ body {
                 <option value="">-- Chọn tour --</option>
                 <?php foreach ($tours as $t): ?>
                 <option value="<?= $t['id'] ?>" <?= ($selected_tour_id == $t['id']) ? 'selected' : '' ?>>
-                  <?= htmlspecialchars($t['title']) ?> - <?= number_format($t['price']) ?> đ
+                  <?= htmlspecialchars($t['title']) ?>
                 </option>
                 <?php endforeach; ?>
               </select>
@@ -179,12 +179,24 @@ body {
 
             <div class="mb-3">
               <label class="form-label">Ngày đặt tour <span class="text-danger">*</span></label>
-              <input type="date" name="booking_date" class="form-control" value="<?= date('Y-m-d') ?>" required>
+              <input type="date" name="booking_date" id="booking_date" class="form-control" 
+                     value="<?= date('Y-m-d') ?>" 
+                     min="<?= date('Y-m-d') ?>" 
+                     required
+                     onchange="validateBookingDate()">
+              <small class="form-text text-muted">
+                <span id="booking-date-hint">Vui lòng chọn ngày đặt tour trong tương lai</span>
+              </small>
             </div>
 
             <div class="mb-3">
               <label class="form-label">Ngày khởi hành</label>
-              <input type="date" name="departure_date" id="departure_date" class="form-control" onchange="checkAvailability()">
+              <input type="date" name="departure_date" id="departure_date" class="form-control" 
+                     min="<?= date('Y-m-d') ?>" 
+                     onchange="validateDepartureDate(); checkAvailability();">
+              <small class="form-text text-muted">
+                <span id="departure-date-hint">Vui lòng chọn ngày khởi hành trong tương lai</span>
+              </small>
             </div>
 
             <!-- Thông báo chỗ trống -->
@@ -338,6 +350,76 @@ function checkAvailability() {
             }
             alert.classList.remove('d-none');
         });
+}
+
+// Validate ngày đặt tour
+function validateBookingDate() {
+    const bookingDate = document.getElementById('booking_date').value;
+    const bookingHint = document.getElementById('booking-date-hint');
+    const bookingInput = document.getElementById('booking_date');
+    
+    if (!bookingDate) {
+        if (bookingHint) {
+            bookingHint.textContent = 'Vui lòng chọn ngày đặt tour trong tương lai';
+            bookingHint.className = 'text-muted';
+        }
+        bookingInput.setCustomValidity('');
+        return;
+    }
+    
+    const selectedDate = new Date(bookingDate);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < now) {
+        if (bookingHint) {
+            bookingHint.textContent = '⚠️ Vui lòng chọn ngày đặt tour trong tương lai.';
+            bookingHint.className = 'text-danger';
+        }
+        bookingInput.setCustomValidity('Vui lòng chọn ngày đặt tour trong tương lai.');
+    } else {
+        if (bookingHint) {
+            bookingHint.textContent = '✓ Ngày đặt tour hợp lệ';
+            bookingHint.className = 'text-success';
+        }
+        bookingInput.setCustomValidity('');
+    }
+}
+
+// Validate ngày khởi hành
+function validateDepartureDate() {
+    const departureDate = document.getElementById('departure_date').value;
+    const departureHint = document.getElementById('departure-date-hint');
+    const departureInput = document.getElementById('departure_date');
+    
+    if (!departureDate) {
+        if (departureHint) {
+            departureHint.textContent = 'Vui lòng chọn ngày khởi hành trong tương lai';
+            departureHint.className = 'text-muted';
+        }
+        departureInput.setCustomValidity('');
+        return;
+    }
+    
+    const selectedDate = new Date(departureDate);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < now) {
+        if (departureHint) {
+            departureHint.textContent = '⚠️ Vui lòng chọn ngày khởi hành trong tương lai.';
+            departureHint.className = 'text-danger';
+        }
+        departureInput.setCustomValidity('Vui lòng chọn ngày khởi hành trong tương lai.');
+    } else {
+        if (departureHint) {
+            departureHint.textContent = '✓ Ngày khởi hành hợp lệ';
+            departureHint.className = 'text-success';
+        }
+        departureInput.setCustomValidity('');
+    }
 }
 
 // Tính giá

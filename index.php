@@ -16,6 +16,7 @@ require_once "controllers/GuideAuthController.php";
 require_once "controllers/GuideIncidentController.php";
 require_once "controllers/SpecialRequestController.php";
 require_once "controllers/RevenueReportController.php";
+require_once "controllers/GuideScheduleController.php";
 
 // =====================
 // MAKE CONTROLLER INSTANCE
@@ -32,6 +33,7 @@ $guideAuth               = new GuideAuthController();
 $guideIncidentController = new GuideIncidentController();
 $specialRequestController = new SpecialRequestController();
 $revenueReportController = new RevenueReportController();
+$guideScheduleController = new GuideScheduleController();
 
 // =====================
 // GET ACTION
@@ -99,17 +101,35 @@ if (strpos($act, "hdv_") === 0) {
             break;
 
         case "hdv_lichtrinh":
-            require_once "models/hdv_model.php";
-            $guide_id = $_SESSION['guide']['id'] ?? 0;
-            $schedules = getScheduleByGuide($guide_id);
-            include "views/hdv/lichtrinh.php";
+        case "hdv_schedule_list":
+            $guideScheduleController->scheduleList();
+            break;
+
+        case "hdv_schedule_detail":
+            $guideScheduleController->scheduleDetail();
+            break;
+
+        case "hdv_checkin":
+            $guideScheduleController->checkIn();
+            break;
+
+        case "hdv_update_status":
+            $guideScheduleController->updateStatus();
             break;
 
         case "hdv_nhatky":
             include "views/hdv/nhatky.php";
             break;
 
+        case "hdv_journal_create":
+            $guideScheduleController->journalCreate();
+            break;
+
         case "hdv_journal_store":
+            $guideScheduleController->journalStore();
+            break;
+
+        case "hdv_journal_store_old":
             require_once "models/GuideJournalModel.php";
             require_once "commons/function.php";
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -522,12 +542,40 @@ switch ($act) {
         $tourController->edit();
         break;
 
+    case "tour-detail":
+        $tourController->detail();
+        break;
+
     case "tour-update":
         $tourController->update();
         break;
 
     case "tour-delete":
         $tourController->delete();
+        break;
+
+    case "lich":
+        $tourController->lichList();
+        break;
+
+    case "lich-create":
+        $tourController->lichCreate();
+        break;
+
+    case "lich-store":
+        $tourController->lichStore();
+        break;
+
+    case "lich-edit":
+        $tourController->lichEdit();
+        break;
+
+    case "lich-update":
+        $tourController->lichUpdate();
+        break;
+
+    case "lich-delete":
+        $tourController->lichDelete();
         break;
 
     // SCHEDULE
@@ -559,12 +607,20 @@ switch ($act) {
         $scheduleController->scheduleDetail();
         break;
 
+    case "schedule-export-customers":
+        $scheduleController->exportCustomers();
+        break;
+
     case "staff-assignment-store":
         $scheduleController->staffAssignmentStore();
         break;
 
     case "staff-assignment-delete":
         $scheduleController->staffAssignmentDelete();
+        break;
+
+    case "staff-assignment-check-conflict":
+        $scheduleController->staffAssignmentCheckConflict();
         break;
 
     case "service-allocation-store":
@@ -605,13 +661,13 @@ switch ($act) {
         $specialRequestController->index();
         break;
 
-    case "special-request-create":
-        $specialRequestController->create();
-        break;
+    // case "special-request-create":
+    //     $specialRequestController->create();
+    //     break;
 
-    case "special-request-store":
-        $specialRequestController->store();
-        break;
+    // case "special-request-store":
+    //     $specialRequestController->store();
+    //     break;
 
     case "special-request-edit":
         $specialRequestController->edit();
@@ -681,6 +737,26 @@ switch ($act) {
 
     case "guide-assign-delete":
         $guideAssignController->delete();
+        break;
+
+    case "guide-assign-detail":
+        $guideAssignController->detail();
+        break;
+
+    case "guide-assign-check-conflict":
+        $guideAssignController->checkConflict();
+        break;
+
+    case "guide-assign-get-tour-info":
+        $guideAssignController->getTourInfo();
+        break;
+
+    case "guide-assign-get-departure-info":
+        $guideAssignController->getDepartureInfo();
+        break;
+
+    case "guide-assign-get-guide-info":
+        $guideAssignController->getGuideInfo();
         break;
 
     // GUIDE JOURNAL

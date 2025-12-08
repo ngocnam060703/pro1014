@@ -215,23 +215,50 @@ body {
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Trạng thái booking <span class="text-danger">*</span></label>
-                    <select name="status" class="form-select" required>
+                    <?php 
+                    $payment_status = strtolower($booking['payment_status'] ?? 'pending');
+                    $can_cancel = !in_array($payment_status, ['paid', 'partial']);
+                    ?>
+                    <select name="status" class="form-select" required id="booking_status">
                         <option value="pending" <?= strtolower($booking['status'] ?? '')=='pending'?'selected':'' ?>>Chờ xác nhận</option>
                         <option value="deposit_paid" <?= strtolower($booking['status'] ?? '')=='deposit_paid'?'selected':'' ?>>Đã cọc</option>
                         <option value="completed" <?= strtolower($booking['status'] ?? '')=='completed'?'selected':'' ?>>Hoàn tất</option>
-                        <option value="cancelled" <?= strtolower($booking['status'] ?? '')=='cancelled'?'selected':'' ?>>Hủy</option>
+                        <option value="cancelled" <?= strtolower($booking['status'] ?? '')=='cancelled'?'selected':'' ?> <?= !$can_cancel ? 'disabled' : '' ?>>Hủy</option>
                     </select>
+                    <?php if (!$can_cancel): ?>
+                      <small class="text-danger">
+                        <i class="bi bi-exclamation-triangle"></i> Không thể hủy booking vì khách đã thanh toán hoặc đã đặt cọc. Vui lòng hoàn tiền trước khi hủy.
+                      </small>
+                    <?php endif; ?>
                   </div>
                   
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Trạng thái thanh toán</label>
-                    <select name="payment_status" class="form-select">
+                    <?php 
+                    // Kiểm tra tour đã kết thúc chưa
+                    $tour_ended = false;
+                    if (!empty($booking['departure_id'])) {
+                        require_once "models/ScheduleModel.php";
+                        $scheduleModel = new ScheduleModel();
+                        $departure = $scheduleModel->getById($booking['departure_id']);
+                        if ($departure) {
+                            $tour_ended = ($departure['status'] == 'completed') || 
+                                         (!empty($departure['end_date']) && strtotime($departure['end_date']) < time());
+                        }
+                    }
+                    ?>
+                    <select name="payment_status" class="form-select" id="payment_status">
                         <option value="">-- Giữ nguyên --</option>
                         <option value="pending" <?= strtolower($booking['payment_status'] ?? '')=='pending'?'selected':'' ?>>Chưa thanh toán</option>
                         <option value="partial" <?= strtolower($booking['payment_status'] ?? '')=='partial'?'selected':'' ?>>Đã cọc</option>
-                        <option value="paid" <?= strtolower($booking['payment_status'] ?? '')=='paid'?'selected':'' ?>>Đã thanh toán</option>
+                        <option value="paid" <?= strtolower($booking['payment_status'] ?? '')=='paid'?'selected':'' ?> <?= $tour_ended ? 'disabled' : '' ?>>Đã thanh toán</option>
                         <option value="refunded" <?= strtolower($booking['payment_status'] ?? '')=='refunded'?'selected':'' ?>>Đã hoàn tiền</option>
                     </select>
+                    <?php if ($tour_ended): ?>
+                      <small class="text-danger">
+                        <i class="bi bi-exclamation-triangle"></i> Không thể ghi nhận thanh toán mới vì tour đã kết thúc.
+                      </small>
+                    <?php endif; ?>
                   </div>
                 </div>
                 
@@ -294,5 +321,43 @@ body {
 
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Validation khi submit form thay đổi trạng thái
+document.querySelector('form[action*="booking-update-status"]')?.addEventListener('submit', function(e) {
+    const statusSelect = document.getElementById('booking_status');
+    const paymentSelect = document.getElementById('payment_status');
+    const selectedStatus = statusSelect.value;
+    const selectedPayment = paymentSelect.value;
+    const currentPaymentStatus = '<?= strtolower($booking['payment_status'] ?? 'pending') ?>';
+    const tourEnded = <?= $tour_ended ? 'true' : 'false' ?>;
+    
+    // Kiểm tra hủy booking khi đã thanh toán
+    if (selectedStatus === 'cancelled') {
+        if (currentPaymentStatus === 'paid' || currentPaymentStatus === 'partial') {
+            e.preventDefault();
+            alert('Không thể hủy booking vì khách đã thanh toán hoặc đã đặt cọc. Vui lòng hoàn tiền trước khi hủy.');
+            return false;
+        }
+    }
+    
+    // Kiểm tra ghi nhận thanh toán khi tour đã kết thúc
+    if ((selectedPayment === 'paid' || selectedPayment === 'partial') && tourEnded) {
+        e.preventDefault();
+        alert('Không thể ghi nhận thanh toán mới vì tour đã kết thúc.');
+        return false;
+    }
+    
+    // Kiểm tra hoàn tiền
+    if (selectedPayment === 'refunded' && currentPaymentStatus === 'pending') {
+        e.preventDefault();
+        alert('Không thể hoàn tiền vì khách chưa thanh toán.');
+        return false;
+    }
+    
+    return true;
+});
+</script>
 </body>
 </html>

@@ -62,7 +62,7 @@ document.getElementById("date_report").addEventListener("change", function() {
             select.innerHTML = '<option value="">-- Chọn tour --</option>';
 
             data.forEach(t => {
-                select.innerHTML += `<option value="${t.id}">${t.tour_name} (${t.start_date})</option>`;
+                select.innerHTML += `<option value="${t.id}">${t.tour_name}</option>`;
             });
         });
 });

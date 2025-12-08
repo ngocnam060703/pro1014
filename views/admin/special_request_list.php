@@ -79,9 +79,6 @@ body {
         <?php endif; ?>
       </h3>
       <div>
-        <a href="index.php?act=special-request-create" class="btn btn-primary me-2">
-          <i class="bi bi-plus-circle"></i> Thêm yêu cầu
-        </a>
         <a href="index.php?act=dashboard" class="btn btn-secondary">
           <i class="bi bi-arrow-left-circle"></i> Quay lại
         </a>

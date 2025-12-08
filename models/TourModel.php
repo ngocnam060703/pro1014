@@ -19,30 +19,80 @@ class TourModel {
         return pdo_query_one($sql, $id);
     }
 
+    public function tourExistsByTitle($title, $excludeId = null) {
+        // Chuẩn hóa title: trim và so sánh không phân biệt hoa thường
+        $normalizedTitle = trim($title);
+        
+        if ($excludeId) {
+            // So sánh không phân biệt hoa thường
+            $sql = "SELECT COUNT(*) as count FROM tours WHERE LOWER(TRIM(title)) = LOWER(?) AND id != ?";
+            $result = pdo_query_one($sql, $normalizedTitle, $excludeId);
+        } else {
+            // So sánh không phân biệt hoa thường
+            $sql = "SELECT COUNT(*) as count FROM tours WHERE LOWER(TRIM(title)) = LOWER(?)";
+            $result = pdo_query_one($sql, $normalizedTitle);
+        }
+        return $result['count'] > 0;
+    }
+
+    public function tourCodeExists($tourCode, $excludeId = null) {
+        if (empty($tourCode)) {
+            return false;
+        }
+        
+        if ($excludeId) {
+            $sql = "SELECT COUNT(*) as count FROM tours WHERE tour_code = ? AND id != ?";
+            $result = pdo_query_one($sql, $tourCode, $excludeId);
+        } else {
+            $sql = "SELECT COUNT(*) as count FROM tours WHERE tour_code = ?";
+            $result = pdo_query_one($sql, $tourCode);
+        }
+        return $result['count'] > 0;
+    }
+
     public function insertTour($data) {
-        $sql = "INSERT INTO tours(title, description, itinerary, price, slots, departure, status, category)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        return pdo_execute(
+        // Sử dụng adult_price làm giá mặc định nếu không có price
+        $price = $data["adult_price"] ?? $data["price"] ?? 0;
+        
+        $sql = "INSERT INTO tours(tour_code, title, description, itinerary, price, adult_price, child_price, infant_price, surcharge, slots, departure, status, category)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        pdo_execute(
             $sql,
+            $data["tour_code"] ?? null,
             $data["title"],
             $data["description"],
             $data["itinerary"],
-            $data["price"],
+            $price,
+            $data["adult_price"] ?? 0,
+            $data["child_price"] ?? 0,
+            $data["infant_price"] ?? 0,
+            $data["surcharge"] ?? 0,
             $data["slots"],
             $data["departure"],
             $data["status"],
             $data["category"] ?? 'domestic'
         );
+        
+        // Trả về ID của tour vừa tạo
+        return pdo_last_insert_id();
     }
 
     public function updateTour($id, $data) {
-        $sql = "UPDATE tours SET title=?, description=?, itinerary=?, price=?, slots=?, departure=?, status=?, category=? WHERE id=?";
+        // Sử dụng adult_price làm giá mặc định nếu không có price
+        $price = $data["adult_price"] ?? $data["price"] ?? 0;
+        
+        $sql = "UPDATE tours SET tour_code=?, title=?, description=?, itinerary=?, price=?, adult_price=?, child_price=?, infant_price=?, surcharge=?, slots=?, departure=?, status=?, category=? WHERE id=?";
         return pdo_execute(
             $sql,
+            $data["tour_code"] ?? null,
             $data["title"],
             $data["description"],
             $data["itinerary"],
-            $data["price"],
+            $price,
+            $data["adult_price"] ?? 0,
+            $data["child_price"] ?? 0,
+            $data["infant_price"] ?? 0,
+            $data["surcharge"] ?? 0,
             $data["slots"],
             $data["departure"],
             $data["status"],

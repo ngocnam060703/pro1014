@@ -36,7 +36,7 @@ body { background: #f5f6fa; font-family: 'Segoe UI', sans-serif; }
   <div class="col-2 sidebar">
     <h4 class="text-center text-light mb-4">HDV</h4>
     <a href="index.php?act=hdv_home"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="index.php?act=hdv_lichtrinh"><i class="bi bi-calendar-event"></i> Xem lịch HDV</a>
+    <a href="index.php?act=hdv_schedule_list"><i class="bi bi-calendar-event"></i> Xem lịch HDV</a>
     <a href="index.php?act=hdv_nhatky"><i class="bi bi-journal-text"></i> Nhật ký tour</a>
     <a href="index.php?act=hdv_data"><i class="bi bi-exclamation-triangle"></i> Báo cáo sự cố</a>
     <a href="index.php?act=hdv_logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')">
@@ -161,8 +161,7 @@ body { background: #f5f6fa; font-family: 'Segoe UI', sans-serif; }
               <?php foreach($myAssigns as $assign): ?>
                 <?php if(isset($assign['departure_id'])): ?>
                 <option value="<?= $assign['departure_id'] ?>">
-                  <?= htmlspecialchars($assign['tour_name'] ?? '') ?> - 
-                  <?= date('d/m/Y H:i', strtotime($assign['departure_time'] ?? '')) ?>
+                  <?= htmlspecialchars($assign['tour_name'] ?? '') ?>
                 </option>
                 <?php endif; ?>
               <?php endforeach; ?>

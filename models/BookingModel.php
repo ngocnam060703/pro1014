@@ -21,6 +21,16 @@ class BookingModel {
         return pdo_query_one($sql, $id);
     }
 
+    // Lấy danh sách bookings theo departure_id
+    public function getByDepartureId($departureId) {
+        $sql = "SELECT b.*, t.title AS tour_title
+                FROM bookings b
+                LEFT JOIN tours t ON b.tour_id = t.id
+                WHERE b.departure_id = ? AND b.status != 'cancelled'
+                ORDER BY b.created_at ASC";
+        return pdo_query($sql, $departureId);
+    }
+
     // Cập nhật trạng thái (cũ - giữ lại để tương thích)
     public function updateStatus($id, $status) {
         return $this->changeStatus($id, $status, null, null);
@@ -36,6 +46,54 @@ class BookingModel {
         
         $old_status = $booking['status'] ?? 'pending';
         $old_payment_status = $booking['payment_status'] ?? 'pending';
+        
+        // VALIDATION: Nếu đã thanh toán (paid) hoặc đã cọc (partial) → KHÔNG ĐƯỢC HỦY BOOKING
+        if ($new_status == 'cancelled' && $old_status != 'cancelled') {
+            if ($old_payment_status == 'paid' || $old_payment_status == 'partial') {
+                return [
+                    'success' => false, 
+                    'message' => 'Không thể hủy booking vì khách đã thanh toán hoặc đã đặt cọc. Vui lòng hoàn tiền trước khi hủy.'
+                ];
+            }
+        }
+        
+        // VALIDATION: Nếu tour đã kết thúc → KHÔNG ĐƯỢC ghi nhận thanh toán mới
+        if ($new_payment_status == 'paid' || $new_payment_status == 'partial') {
+            // Kiểm tra trạng thái departure/tour
+            if (!empty($booking['departure_id'])) {
+                $departure_sql = "SELECT status, end_date FROM departures WHERE id = ?";
+                $departure = pdo_query_one($departure_sql, $booking['departure_id']);
+                
+                if ($departure) {
+                    // Nếu tour đã hoàn thành hoặc đã kết thúc
+                    if ($departure['status'] == 'completed' || 
+                        (!empty($departure['end_date']) && strtotime($departure['end_date']) < time())) {
+                        return [
+                            'success' => false,
+                            'message' => 'Không thể ghi nhận thanh toán vì tour đã kết thúc.'
+                        ];
+                    }
+                }
+            }
+        }
+        
+        // VALIDATION: Không được hoàn tiền vượt quá số tiền khách đã thanh toán
+        if ($new_payment_status == 'refunded') {
+            $total_paid = (float)($booking['deposit_amount'] ?? 0);
+            // Nếu đã thanh toán đầy đủ, tổng tiền đã thanh toán = total_price
+            if ($old_payment_status == 'paid') {
+                $total_paid = (float)($booking['total_price'] ?? 0);
+            }
+            
+            // Kiểm tra nếu có số tiền hoàn (có thể từ change_reason hoặc refund_amount)
+            // Nếu không có thông tin cụ thể, chỉ cho phép hoàn nếu đã thanh toán
+            if ($old_payment_status == 'pending') {
+                return [
+                    'success' => false,
+                    'message' => 'Không thể hoàn tiền vì khách chưa thanh toán.'
+                ];
+            }
+        }
         
         // Nếu trạng thái không thay đổi thì không làm gì
         if ($old_status == $new_status && 
@@ -292,6 +350,7 @@ class BookingModel {
 
     // Tạo booking mới
     public function createBooking($data) {
+        // VALIDATION: Không được tạo booking mới nếu tour đã đầy chỗ và đã khóa thanh toán
         // Kiểm tra chỗ trống
         $availability = $this->checkAvailability(
             $data['tour_id'],
@@ -301,7 +360,45 @@ class BookingModel {
         );
         
         if (!$availability['available']) {
+            // Kiểm tra xem departure có đang khóa thanh toán không
+            if (!empty($data['departure_id'])) {
+                $departure_sql = "SELECT status, seats_booked, total_seats FROM departures WHERE id = ?";
+                $departure = pdo_query_one($departure_sql, $data['departure_id']);
+                
+                if ($departure && 
+                    ($departure['seats_booked'] >= $departure['total_seats']) &&
+                    ($departure['status'] == 'completed' || $departure['status'] == 'cancelled')) {
+                    return [
+                        'success' => false, 
+                        'message' => 'Không thể tạo booking vì tour đã đầy chỗ và đã khóa thanh toán.'
+                    ];
+                }
+            }
             return ['success' => false, 'message' => $availability['message']];
+        }
+        
+        // Kiểm tra tour đã kết thúc chưa
+        if (!empty($data['departure_id'])) {
+            $departure_sql = "SELECT status, end_date, departure_time FROM departures WHERE id = ?";
+            $departure = pdo_query_one($departure_sql, $data['departure_id']);
+            
+            if ($departure) {
+                // Nếu tour đã hoàn thành
+                if ($departure['status'] == 'completed') {
+                    return [
+                        'success' => false,
+                        'message' => 'Không thể tạo booking vì tour đã hoàn thành.'
+                    ];
+                }
+                
+                // Nếu tour đã kết thúc (end_date đã qua)
+                if (!empty($departure['end_date']) && strtotime($departure['end_date']) < time()) {
+                    return [
+                        'success' => false,
+                        'message' => 'Không thể tạo booking vì tour đã kết thúc.'
+                    ];
+                }
+            }
         }
         
         // Tính giá

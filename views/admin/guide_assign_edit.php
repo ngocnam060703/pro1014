@@ -4,8 +4,18 @@ if (session_status() == PHP_SESSION_NONE) session_start();
 // Khi sửa, gán mặc định để tránh lỗi
 $assign = $assign ?? [
     'id'=>'', 'guide_id'=>'', 'tour_id'=>'', 'departure_id'=>'',
-    'departure_date'=>'', 'meeting_point'=>'', 'max_people'=>'', 'note'=>'', 'status'=>'scheduled'
+    'departure_date'=>'', 'meeting_point'=>'', 'max_people'=>'', 'note'=>'', 'reason'=>'', 'status'=>'scheduled'
 ];
+
+// Kiểm tra business rules
+$isTourCompleted = false;
+$isAssignmentCompleted = false;
+if (!empty($assign['departure_id'])) {
+    require_once "models/GuideAssignModel.php";
+    $assignModel = new GuideAssignModel();
+    $isTourCompleted = $assignModel->isTourCompleted($assign['departure_id']);
+    $isAssignmentCompleted = $assignModel->isAssignmentCompleted($assign['id'] ?? 0);
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -61,13 +71,27 @@ body { background: linear-gradient(to right, #fbc2eb, #a6c1ee); font-family: 'Se
     </div>
 
     <div class="card p-4">
-      <form action="index.php?act=guide-assign-update" method="POST">
+      <?php if(isset($_SESSION['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show">
+          <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <?php endif; ?>
+
+      <?php if(isset($_SESSION['message'])): ?>
+        <div class="alert alert-success alert-dismissible fade show">
+          <?= $_SESSION['message']; unset($_SESSION['message']); ?>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <?php endif; ?>
+
+      <form action="index.php?act=guide-assign-update" method="POST" id="assignForm">
         <input type="hidden" name="id" value="<?= $assign['id'] ?>">
 
         <div class="row g-3">
           <div class="col-md-6 form-section">
-            <label class="form-label">Hướng dẫn viên</label>
-            <select name="guide_id" class="form-select" required>
+            <label class="form-label">Hướng dẫn viên <span class="text-danger">*</span></label>
+            <select name="guide_id" id="guide_id" class="form-select" required onchange="checkScheduleConflict()" <?= ($isTourCompleted || $isAssignmentCompleted) ? 'disabled' : '' ?>>
               <option value="">-- Chọn HDV --</option>
               <?php foreach($guides as $g): ?>
                 <option value="<?= $g['id'] ?>" <?= $assign['guide_id']==$g['id'] ? 'selected' : '' ?>>
@@ -75,6 +99,20 @@ body { background: linear-gradient(to right, #fbc2eb, #a6c1ee); font-family: 'Se
                 </option>
               <?php endforeach; ?>
             </select>
+            <?php if($isTourCompleted || $isAssignmentCompleted): ?>
+              <input type="hidden" name="guide_id" value="<?= $assign['guide_id'] ?>">
+              <div class="alert alert-warning mt-2">
+                <i class="bi bi-exclamation-triangle"></i> 
+                <?php if($isTourCompleted): ?>
+                  Không thể đổi HDV vì tour đã kết thúc.
+                <?php elseif($isAssignmentCompleted): ?>
+                  Không thể đổi HDV vì phân công đã kết thúc.
+                <?php endif; ?>
+              </div>
+            <?php endif; ?>
+            <small class="form-text text-muted">
+              <span id="guide-conflict-hint"></span>
+            </small>
           </div>
 
           <div class="col-md-6 form-section">
@@ -90,15 +128,21 @@ body { background: linear-gradient(to right, #fbc2eb, #a6c1ee); font-family: 'Se
           </div>
 
           <div class="col-md-6 form-section">
-            <label class="form-label">Lịch khởi hành</label>
-            <select name="departure_id" class="form-select" required>
+            <label class="form-label">Lịch khởi hành <span class="text-danger">*</span></label>
+            <select name="departure_id" id="departure_id" class="form-select" required onchange="checkScheduleConflict()">
               <option value="">-- Chọn lịch --</option>
               <?php foreach($departures as $d): ?>
-                <option value="<?= $d['id'] ?>" <?= $assign['departure_id']==$d['id'] ? 'selected' : '' ?>>
+                <option value="<?= $d['id'] ?>" 
+                        data-departure-time="<?= $d['departure_time'] ?>"
+                        data-end-date="<?= $d['end_date'] ?? '' ?>"
+                        <?= $assign['departure_id']==$d['id'] ? 'selected' : '' ?>>
                   <?= htmlspecialchars($d['departure_time'].' | '.$d['meeting_point']) ?>
                 </option>
               <?php endforeach; ?>
             </select>
+            <small class="form-text text-muted">
+              <span id="departure-conflict-hint"></span>
+            </small>
           </div>
 
           <div class="col-md-6 form-section">
@@ -118,15 +162,21 @@ body { background: linear-gradient(to right, #fbc2eb, #a6c1ee); font-family: 'Se
 
           <div class="col-12 form-section">
             <label class="form-label">Ghi chú</label>
-            <textarea name="note" class="form-control" rows="3"><?= htmlspecialchars($assign['note']) ?></textarea>
+            <textarea name="note" class="form-control" rows="3"><?= htmlspecialchars($assign['note'] ?? '') ?></textarea>
+          </div>
+
+          <div class="col-12 form-section">
+            <label class="form-label">Lý do phân công</label>
+            <textarea name="reason" class="form-control" rows="2" placeholder="Nhập lý do phân công (nếu có)"><?= htmlspecialchars($assign['reason'] ?? '') ?></textarea>
           </div>
 
           <div class="col-md-6 form-section">
             <label class="form-label">Trạng thái</label>
             <select name="status" class="form-select" required>
-              <option value="scheduled" <?= $assign['status']=='scheduled' ? 'selected' : '' ?>>Chưa bắt đầu</option>
-              <option value="in_progress" <?= $assign['status']=='in_progress' ? 'selected' : '' ?>>Đang thực hiện</option>
-              <option value="completed" <?= $assign['status']=='completed' ? 'selected' : '' ?>>Hoàn thành</option>
+              <option value="scheduled" <?= ($assign['status'] ?? '')=='scheduled' ? 'selected' : '' ?>>Chưa bắt đầu</option>
+              <option value="in_progress" <?= ($assign['status'] ?? '')=='in_progress' ? 'selected' : '' ?>>Đang chạy</option>
+              <option value="paused" <?= ($assign['status'] ?? '')=='paused' ? 'selected' : '' ?>>Tạm dừng</option>
+              <option value="completed" <?= ($assign['status'] ?? '')=='completed' ? 'selected' : '' ?>>Đã kết thúc</option>
             </select>
           </div>
 
@@ -140,5 +190,57 @@ body { background: linear-gradient(to right, #fbc2eb, #a6c1ee); font-family: 'Se
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function checkScheduleConflict() {
+    const guideId = document.getElementById('guide_id').value;
+    const departureId = document.getElementById('departure_id').value;
+    const assignId = <?= $assign['id'] ?? 0 ?>;
+    
+    if (!guideId || !departureId) {
+        document.getElementById('guide-conflict-hint').innerHTML = '';
+        document.getElementById('departure-conflict-hint').innerHTML = '';
+        return;
+    }
+    
+    const url = `index.php?act=guide-assign-check-conflict&guide_id=${guideId}&departure_id=${departureId}&exclude_id=${assignId}`;
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.has_conflict) {
+                document.getElementById('guide-conflict-hint').innerHTML = 
+                    '<span class="text-danger"><i class="bi bi-exclamation-triangle"></i> ' + data.message + '</span>';
+                document.getElementById('departure-conflict-hint').innerHTML = 
+                    '<span class="text-danger"><i class="bi bi-exclamation-triangle"></i> ' + data.message + '</span>';
+            } else {
+                document.getElementById('guide-conflict-hint').innerHTML = 
+                    '<span class="text-success"><i class="bi bi-check-circle"></i> HDV có thể phân công</span>';
+                document.getElementById('departure-conflict-hint').innerHTML = '';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+// Kiểm tra khi form submit
+document.getElementById('assignForm').addEventListener('submit', function(e) {
+    const guideId = document.getElementById('guide_id').value;
+    const departureId = document.getElementById('departure_id').value;
+    
+    if (!guideId || !departureId) {
+        e.preventDefault();
+        alert('Vui lòng chọn đầy đủ thông tin!');
+        return false;
+    }
+    
+    const conflictHint = document.getElementById('guide-conflict-hint').innerHTML;
+    if (conflictHint.includes('exclamation-triangle')) {
+        e.preventDefault();
+        alert('Không thể lưu vì có xung đột lịch trình!');
+        return false;
+    }
+});
+</script>
 </body>
 </html>

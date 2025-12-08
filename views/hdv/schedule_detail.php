@@ -38,7 +38,7 @@ body { background:#f5f6fa; font-family: 'Segoe UI', sans-serif; }
   <div class="col-2 sidebar">
     <h4 class="text-center text-light mb-4">HDV</h4>
     <a href="index.php?act=hdv_home"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="index.php?act=hdv_lichtrinh"><i class="bi bi-calendar-event"></i> Xem lịch HDV</a>
+    <a href="index.php?act=hdv_schedule_list"><i class="bi bi-calendar-event"></i> Xem lịch HDV</a>
     <a href="index.php?act=hdv_customers&departure_id=<?= $departure_id ?>"><i class="bi bi-people"></i> Danh sách khách</a>
     <a href="index.php?act=hdv_nhatky"><i class="bi bi-journal-text"></i> Nhật ký tour</a>
     <a href="index.php?act=hdv_data"><i class="bi bi-exclamation-triangle"></i> Báo cáo sự cố</a>
@@ -52,7 +52,7 @@ body { background:#f5f6fa; font-family: 'Segoe UI', sans-serif; }
     <div class="card-container">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold text-primary"><i class="bi bi-calendar3"></i> Chi tiết lịch trình</h3>
-        <a href="index.php?act=hdv_lichtrinh" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Quay lại</a>
+        <a href="index.php?act=hdv_schedule_list" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Quay lại</a>
       </div>
 
       <div class="row mb-4">

@@ -83,5 +83,83 @@ class DepartureStaffAssignmentModel {
                 ORDER BY fullname";
         return pdo_query($sql);
     }
+
+    // Kiểm tra hướng dẫn viên có trùng lịch không (qua departure_staff_assignments)
+    public function hasScheduleConflict($guideId, $departureId, $excludeAssignmentId = null) {
+        // Lấy thông tin departure hiện tại
+        $currentDeparture = pdo_query_one(
+            "SELECT departure_time, end_date, end_time FROM departures WHERE id = ?",
+            $departureId
+        );
+        
+        if (!$currentDeparture) {
+            return false;
+        }
+        
+        $currentStart = strtotime($currentDeparture['departure_time']);
+        $currentEnd = !empty($currentDeparture['end_date']) 
+            ? strtotime($currentDeparture['end_date'] . ' ' . ($currentDeparture['end_time'] ?? '23:59:59'))
+            : $currentStart + 86400; // Nếu không có end_date, mặc định 1 ngày
+        
+        // Lấy tất cả departure mà hướng dẫn viên đã được phân công qua departure_staff_assignments
+        $excludeClause = $excludeAssignmentId ? "AND sa.id != ?" : "";
+        $params = [$guideId, 'guide', $departureId];
+        if ($excludeAssignmentId) {
+            $params[] = $excludeAssignmentId;
+        }
+        
+        $sql = "SELECT d.id, d.departure_time, d.end_date, d.end_time, t.title as tour_name
+                FROM departure_staff_assignments sa
+                INNER JOIN departures d ON sa.departure_id = d.id
+                INNER JOIN tours t ON d.tour_id = t.id
+                WHERE sa.staff_id = ? AND sa.staff_type = ? AND sa.departure_id != ? $excludeClause
+                AND sa.status != 'cancelled'";
+        
+        $existingAssignments = pdo_query($sql, ...$params);
+        
+        // Kiểm tra overlap với từng departure đã được phân công
+        foreach ($existingAssignments as $assignment) {
+            $assignStart = strtotime($assignment['departure_time']);
+            $assignEnd = !empty($assignment['end_date'])
+                ? strtotime($assignment['end_date'] . ' ' . ($assignment['end_time'] ?? '23:59:59'))
+                : $assignStart + 86400;
+            
+            // Kiểm tra overlap: (start1 <= end2) AND (end1 >= start2)
+            if ($currentStart <= $assignEnd && $currentEnd >= $assignStart) {
+                return [
+                    'has_conflict' => true,
+                    'conflict_departure' => $assignment,
+                    'message' => "Hướng dẫn viên đã được phân công cho tour '{$assignment['tour_name']}' trong khoảng thời gian này."
+                ];
+            }
+        }
+        
+        // Kiểm tra cả trong guide_assign table
+        $sql2 = "SELECT d.id, d.departure_time, d.end_date, d.end_time, t.title as tour_name
+                 FROM guide_assign ga
+                 INNER JOIN departures d ON ga.departure_id = d.id
+                 INNER JOIN tours t ON d.tour_id = t.id
+                 WHERE ga.guide_id = ? AND ga.departure_id != ?
+                 AND ga.status != 'cancelled'";
+        
+        $guideAssignments = pdo_query($sql2, $guideId, $departureId);
+        
+        foreach ($guideAssignments as $assignment) {
+            $assignStart = strtotime($assignment['departure_time']);
+            $assignEnd = !empty($assignment['end_date'])
+                ? strtotime($assignment['end_date'] . ' ' . ($assignment['end_time'] ?? '23:59:59'))
+                : $assignStart + 86400;
+            
+            if ($currentStart <= $assignEnd && $currentEnd >= $assignStart) {
+                return [
+                    'has_conflict' => true,
+                    'conflict_departure' => $assignment,
+                    'message' => "Hướng dẫn viên đã được phân công cho tour '{$assignment['tour_name']}' trong khoảng thời gian này."
+                ];
+            }
+        }
+        
+        return ['has_conflict' => false];
+    }
 }
 

@@ -108,7 +108,7 @@ if (session_status() == PHP_SESSION_NONE) session_start();
 
                         <?php foreach($departures as $d): ?>
                             <option value="<?= $d['id'] ?>">
-                                <?= htmlspecialchars($d['tour_name'] . " - " . $d['start_date']) ?>
+                                <?= htmlspecialchars($d['tour_name']) ?>
                             </option>
                         <?php endforeach; ?>
 
