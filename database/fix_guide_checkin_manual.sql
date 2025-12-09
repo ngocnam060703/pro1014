@@ -39,4 +39,3 @@ ADD UNIQUE KEY `unique_guide_departure` (`guide_id`, `departure_id`);
 -- 7. Kiểm tra lại cấu trúc:
 -- SHOW COLUMNS FROM guide_checkin;
 
-
