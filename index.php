@@ -298,9 +298,23 @@ if (strpos($act, "hdv_") === 0) {
                     'notes' => $_POST['notes'] ?? null
                 ];
                 $requestModel->store($data);
-                $_SESSION['message'] = "Đã thêm yêu cầu đặc biệt!";
+                $_SESSION['message'] = "Đã thêm yêu cầu đặc biệt thành công!";
+                
+                // Lấy departure_id từ booking để redirect đúng
+                require_once "models/BookingModel.php";
+                $bookingModel = new BookingModel();
+                $booking = $bookingModel->find($_POST['booking_id']);
+                $departure_id = $booking['departure_id'] ?? 0;
+                
+                // Redirect về trang customers với departure_id
+                if ($departure_id) {
+                    header("Location: index.php?act=hdv_customers&departure_id=" . $departure_id);
+                } else {
+                    header("Location: index.php?act=hdv_schedule_list");
+                }
+            } else {
+                header("Location: index.php?act=hdv_schedule_list");
             }
-            header("Location: " . $_SERVER['HTTP_REFERER'] ?? "index.php?act=hdv_customers");
             exit;
             break;
 
