@@ -318,4 +318,3 @@ photoInput.addEventListener('change', function() {
 </body>
 </html>
 
-

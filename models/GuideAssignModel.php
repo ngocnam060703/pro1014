@@ -130,6 +130,10 @@ class GuideAssignModel {
         $where = ["ga.guide_id = ?"];
         $params = [$guide_id];
         
+        // KHÔNG lọc theo status cancelled để đảm bảo hiển thị tất cả phân công (trừ cancelled)
+        // Chỉ lọc các phân công chưa bị hủy - đảm bảo lấy tất cả phân công mới (scheduled, in_progress, completed, paused)
+        $where[] = "ga.status != 'cancelled'";
+        
         // Filter theo tháng
         if (!empty($filters['month'])) {
             $monthYear = explode('-', $filters['month']);
@@ -146,7 +150,7 @@ class GuideAssignModel {
             $params[] = $filters['date'];
         }
         
-        // Filter theo trạng thái
+        // Filter theo trạng thái (nếu có)
         if (!empty($filters['status'])) {
             $where[] = "ga.status = ?";
             $params[] = $filters['status'];
@@ -160,11 +164,25 @@ class GuideAssignModel {
         
         $whereClause = implode(' AND ', $where);
         
+        // Query đảm bảo lấy TẤT CẢ phân công của guide (trừ cancelled)
+        // Sử dụng INNER JOIN để đảm bảo chỉ lấy phân công có departure và tour hợp lệ
+        // ORDER BY assigned_at DESC để phân công mới nhất hiển thị trước (nếu cùng departure_time)
+        // Đảm bảo tour_code và title không giống nhau - nếu tour_code null hoặc giống title thì dùng tour_id làm mã
         $sql = "SELECT 
                     ga.*,
                     t.id as tour_id,
                     t.title as tour_name,
-                    t.tour_code,
+                    COALESCE(
+                        NULLIF(
+                            CASE 
+                                WHEN t.tour_code IS NULL OR t.tour_code = '' OR TRIM(t.tour_code) = '' OR t.tour_code = t.title 
+                                THEN NULL
+                                ELSE t.tour_code 
+                            END,
+                            ''
+                        ),
+                        CONCAT('TOUR-', LPAD(t.id, 4, '0'))
+                    ) as tour_code,
                     t.description as tour_description,
                     d.departure_time,
                     d.end_date,
@@ -174,14 +192,26 @@ class GuideAssignModel {
                     d.total_seats,
                     d.seats_booked,
                     (SELECT COUNT(*) FROM bookings b WHERE b.departure_id = d.id AND b.status != 'cancelled') as booked_guests,
-                    DATEDIFF(COALESCE(d.end_date, DATE(d.departure_time)), DATE(d.departure_time)) + 1 as duration_days
+                    DATEDIFF(COALESCE(d.end_date, DATE(d.departure_time)), DATE(d.departure_time)) + 1 as duration_days,
+                    ga.assigned_at,
+                    ga.assigned_by
                 FROM guide_assign ga
                 INNER JOIN departures d ON ga.departure_id = d.id
                 INNER JOIN tours t ON d.tour_id = t.id
                 WHERE $whereClause
-                ORDER BY d.departure_time DESC";
+                ORDER BY ga.assigned_at DESC, d.departure_time DESC";
         
-        return pdo_query($sql, ...$params);
+        $result = pdo_query($sql, ...$params);
+        
+        // Đảm bảo tour_code luôn có giá trị và không giống tour_name
+        foreach ($result as &$row) {
+            if (empty($row['tour_code']) || trim($row['tour_code']) === '' || $row['tour_code'] === $row['tour_name']) {
+                $row['tour_code'] = 'TOUR-' . str_pad($row['tour_id'], 4, '0', STR_PAD_LEFT);
+            }
+        }
+        unset($row);
+        
+        return $result;
     }
 
     // Thêm phân công

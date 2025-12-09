@@ -57,6 +57,20 @@ body { background:#f5f6fa; font-family: 'Segoe UI', sans-serif; }
         </div>
       </div>
 
+      <?php if(isset($_SESSION['message'])): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <i class="bi bi-check-circle"></i> <?= $_SESSION['message']; unset($_SESSION['message']); ?>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <?php endif; ?>
+
+      <?php if(isset($_SESSION['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-circle"></i> <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <?php endif; ?>
+
       <?php if($schedule): ?>
       <div class="alert alert-info mb-4">
         <strong>Tour:</strong> <?= htmlspecialchars($schedule['tour_name']) ?> | 

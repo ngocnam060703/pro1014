@@ -226,7 +226,8 @@ class GuideAssignController {
         $note = $_POST["note"] ?? '';
         $reason = $_POST["reason"] ?? '';
         $status = $_POST["status"] ?? 'scheduled';
-        $assigned_by = $_SESSION['user_id'] ?? null;
+        // Lấy user ID từ session (admin)
+        $assigned_by = $_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? null;
 
         // Lấy thông tin departure
         $departure = pdo_query_one("SELECT * FROM departures WHERE id = ?", $departure_id);
@@ -329,7 +330,7 @@ class GuideAssignController {
         $note = $_POST["note"] ?? '';
         $reason = $_POST["reason"] ?? '';
         $status = $_POST["status"] ?? 'scheduled';
-        $changed_by = $_SESSION['user_id'] ?? null;
+        $changed_by = $_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? null;
 
         // Lấy thông tin assignment hiện tại
         $oldAssignment = $this->assign->find($id);
@@ -427,7 +428,7 @@ class GuideAssignController {
         }
         
         $id = $_GET["id"];
-        $changed_by = $_SESSION['user_id'] ?? null;
+        $changed_by = $_SESSION['user']['id'] ?? $_SESSION['user_id'] ?? null;
         
         // Lấy thông tin assignment
         $assignment = $this->assign->find($id);
