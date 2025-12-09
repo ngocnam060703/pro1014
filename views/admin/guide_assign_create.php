@@ -14,32 +14,175 @@ $tours = $tours ?? [];
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 <style>
-body { background: linear-gradient(to right, #fbc2eb, #a6c1ee); font-family: 'Segoe UI', sans-serif; }
-.sidebar { height: 100vh; background: #343a40; padding-top: 20px; }
-.sidebar h4 { font-weight: 700; }
-.sidebar a { color: #ccc; padding: 12px; display: block; text-decoration: none; border-left: 3px solid transparent; }
-.sidebar a:hover { background: #495057; color: #fff; border-left: 3px solid #ff6a00; }
-.content { padding: 30px; }
-.card { border-radius: 18px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-.btn-primary { background: linear-gradient(45deg,#ff6a00,#ee0979); border: none; }
-.btn-primary:hover { background: linear-gradient(45deg,#ee0979,#ff6a00); }
-.btn-secondary { background: #6c757d; border: none; }
-.step-section { padding: 20px; margin-bottom: 20px; border-radius: 12px; background: linear-gradient(to right, #fdfbfb, #ebedee); box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 4px solid #0d6efd; }
-.step-header { font-weight: 700; color: #0d6efd; margin-bottom: 15px; font-size: 18px; }
-.info-box { background: #fff; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #dee2e6; }
-.info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
-.info-row:last-child { border-bottom: none; }
-.info-label { font-weight: 600; color: #495057; }
-.info-value { color: #212529; }
-.badge-status { padding: 5px 10px; border-radius: 5px; font-size: 12px; }
-.badge-open { background: #198754; color: #fff; }
-.badge-upcoming { background: #0dcaf0; color: #000; }
-.badge-in_progress { background: #0d6efd; color: #fff; }
-.badge-completed { background: #6c757d; color: #fff; }
-.schedule-item { background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid #0d6efd; }
-.alert-warning-custom { background: #fff3cd; border: 1px solid #ffc107; color: #856404; }
-.alert-danger-custom { background: #f8d7da; border: 1px solid #dc3545; color: #721c24; }
-.alert-success-custom { background: #d1e7dd; border: 1px solid #198754; color: #0f5132; }
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+}
+.sidebar {
+    height: 100vh;
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+    padding-top: 20px;
+    position: fixed;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+.sidebar h4 { 
+    font-weight: 700; 
+    color: #fff; 
+    text-align: center;
+    margin-bottom: 30px;
+}
+.sidebar a {
+    color: #ecf0f1;
+    padding: 15px 20px;
+    display: block;
+    text-decoration: none;
+    font-size: 15px;
+    border-left: 3px solid transparent;
+    transition: all 0.3s;
+}
+.sidebar a:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border-left: 3px solid #3498db;
+    transform: translateX(5px);
+}
+.sidebar a.active {
+    color: #fff;
+    background: rgba(52, 152, 219, 0.2);
+    border-left: 3px solid #3498db;
+}
+.content { 
+    padding: 30px; 
+    margin-left: 16.666667%;
+}
+.card-container {
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    margin-bottom: 20px;
+}
+.step-section {
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #667eea;
+}
+.step-header {
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+.info-box {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 15px;
+    border: 2px solid #e9ecef;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.info-row:last-child {
+    border-bottom: none;
+}
+.info-label {
+    font-weight: 600;
+    color: #667eea;
+}
+.info-value {
+    color: #212529;
+    font-weight: 500;
+}
+.badge-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.badge-open { background: linear-gradient(135deg, #198754 0%, #20c997 100%); color: #fff; }
+.badge-upcoming { background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%); }
+.badge-in_progress { background: linear-gradient(135deg, #0d6efd 0%, #084298 100%); color: #fff; }
+.badge-completed { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: #fff; }
+.schedule-item {
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border-left: 3px solid #667eea;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.alert-warning-custom {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffc107 100%);
+    border: 2px solid #ffc107;
+    color: #856404;
+    border-radius: 10px;
+    padding: 15px;
+}
+.alert-danger-custom {
+    background: linear-gradient(135deg, #f8d7da 0%, #dc3545 100%);
+    border: 2px solid #dc3545;
+    color: #721c24;
+    border-radius: 10px;
+    padding: 15px;
+}
+.alert-success-custom {
+    background: linear-gradient(135deg, #d1e7dd 0%, #198754 100%);
+    border: 2px solid #198754;
+    color: #0f5132;
+    border-radius: 10px;
+    padding: 15px;
+}
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 10px 15px;
+    transition: all 0.3s;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+.btn-modern {
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 500;
+    transition: all 0.3s;
+    border: none;
+}
+.btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.btn-primary:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
 </style>
 </head>
 <body>
@@ -47,7 +190,7 @@ body { background: linear-gradient(to right, #fbc2eb, #a6c1ee); font-family: 'Se
 
   <!-- SIDEBAR -->
   <div class="col-2 sidebar">
-    <h4 class="text-center text-light mb-4">ADMIN</h4>
+    <h4 class="mb-4">ADMIN</h4>
     <a href="index.php?act=dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <a href="index.php?act=account"><i class="bi bi-people"></i> Quản lý tài khoản</a>
     <a href="index.php?act=guide"><i class="bi bi-person-badge"></i> Quản lý nhân viên</a>
@@ -56,21 +199,25 @@ body { background: linear-gradient(to right, #fbc2eb, #a6c1ee); font-family: 'Se
     <a href="index.php?act=tour"><i class="bi bi-card-list"></i> Quản lý Tour</a>
     <a href="index.php?act=booking"><i class="bi bi-cart"></i> Quản lý Booking</a>
     <a href="index.php?act=special-request"><i class="bi bi-exclamation-circle"></i> Yêu cầu đặc biệt</a>
-    <a href="index.php?act=guide-assign" style="color:#fff; background:#495057; border-left:3px solid #ff6a00;">
-      <i class="bi bi-card-list"></i> Phân công HDV
-    </a>
+    <a href="index.php?act=guide-assign" class="active"><i class="bi bi-card-list"></i> Phân công HDV</a>
     <a href="index.php?act=guide-incident"><i class="bi bi-exclamation-triangle"></i> Danh sách sự cố</a>
-    <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')">
+    <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
       <i class="bi bi-box-arrow-right"></i> Đăng xuất
     </a>
   </div>
 
   <!-- CONTENT -->
   <div class="col-10 content">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold"><i class="bi bi-plus-circle"></i> Thêm phân công HDV</h3>
-        <a href="index.php?act=guide-assign" class="btn btn-secondary"><i class="bi bi-arrow-left-circle"></i> Quay lại danh sách</a>
-    </div>
+    <div class="card-container fade-in">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+              <h3 class="mb-1 fw-bold text-primary"><i class="bi bi-plus-circle"></i> Thêm phân công HDV</h3>
+              <p class="text-muted mb-0">Điền thông tin để tạo phân công mới</p>
+          </div>
+          <a href="index.php?act=guide-assign" class="btn btn-secondary btn-modern">
+              <i class="bi bi-arrow-left-circle"></i> Quay lại danh sách
+          </a>
+      </div>
 
     <?php if(isset($_SESSION['error'])): ?>
       <div class="alert alert-danger alert-dismissible fade show">
@@ -86,7 +233,6 @@ body { background: linear-gradient(to right, #fbc2eb, #a6c1ee); font-family: 'Se
       </div>
     <?php endif; ?>
 
-    <div class="card p-4">
       <form action="index.php?act=guide-assign-store" method="POST" id="assignForm">
 
         <!-- BƯỚC 1: Chọn Tour -->
@@ -229,8 +375,8 @@ body { background: linear-gradient(to right, #fbc2eb, #a6c1ee); font-family: 'Se
 
         <!-- BƯỚC 5: Xác nhận -->
         <div class="d-flex justify-content-between mt-4">
-          <a href="index.php?act=guide-assign" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Quay lại</a>
-          <button type="submit" class="btn btn-primary" id="submit-btn" disabled><i class="bi bi-save"></i> Tạo phân công</button>
+          <a href="index.php?act=guide-assign" class="btn btn-secondary btn-modern"><i class="bi bi-arrow-left"></i> Quay lại</a>
+          <button type="submit" class="btn btn-primary btn-modern" id="submit-btn" disabled><i class="bi bi-save"></i> Tạo phân công</button>
         </div>
       </form>
     </div>

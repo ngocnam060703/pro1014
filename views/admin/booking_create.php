@@ -33,54 +33,118 @@ if ($selected_tour_id) {
 
 <style>
 body {
-    background: linear-gradient(to right, #dfe9f3, #ffffff);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
     font-family: 'Segoe UI', sans-serif;
 }
 .sidebar {
     height: 100vh;
-    background: #343a40;
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
     padding-top: 20px;
+    position: fixed;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
 }
-.sidebar h4 { font-weight: 700; color:#fff; }
+.sidebar h4 { 
+    font-weight: 700; 
+    color: #fff; 
+    text-align: center;
+    margin-bottom: 30px;
+}
 .sidebar a {
-    color: #ccc;
-    padding: 12px;
+    color: #ecf0f1;
+    padding: 15px 20px;
     display: block;
     text-decoration: none;
     font-size: 15px;
     border-left: 3px solid transparent;
+    transition: all 0.3s;
 }
 .sidebar a:hover {
-    background: #495057;
+    background: rgba(255,255,255,0.1);
     color: #fff;
-    border-left: 3px solid #0d6efd;
+    border-left: 3px solid #3498db;
+    transform: translateX(5px);
 }
 .sidebar a.active {
-    color:#fff;
-    background:#495057;
-    border-left:3px solid #0d6efd;
+    color: #fff;
+    background: rgba(52, 152, 219, 0.2);
+    border-left: 3px solid #3498db;
 }
-
-.content { padding: 30px; }
-.card {
-    border-radius: 18px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+.content { 
+    padding: 30px; 
+    margin-left: 16.666667%;
 }
-.btn-success, .btn-secondary {
-    border-radius: 50px;
+.card-container {
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    margin-bottom: 20px;
+}
+.form-section {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 10px 15px;
+    transition: all 0.3s;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+.btn-modern {
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 500;
+    transition: all 0.3s;
+    border: none;
+}
+.btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+.btn-success {
+    background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+}
+.btn-success:hover {
+    background: linear-gradient(135deg, #20c997 0%, #198754 100%);
 }
 #priceSummary {
-    background: #f8f9fa;
-    border-radius: 10px;
-    padding: 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 15px;
+    padding: 25px;
     margin-top: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 .guest-item {
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
     margin-bottom: 15px;
     background: #fff;
+    transition: all 0.3s;
+}
+.guest-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.2);
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
 }
 </style>
 </head>
@@ -101,17 +165,23 @@ body {
     <a href="index.php?act=special-request"><i class="bi bi-exclamation-circle"></i> Yêu cầu đặc biệt</a>
     <a href="index.php?act=guide-assign"><i class="bi bi-card-list"></i> Phân công HDV</a>
     <a href="index.php?act=guide-incident"><i class="bi bi-exclamation-triangle"></i> Danh sách sự cố</a>
-    <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')">
+    <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
       <i class="bi bi-box-arrow-right"></i> Đăng xuất
     </a>
   </div>
 
   <!-- CONTENT -->
   <div class="col-10 content">
-    <div class="card p-4">
-      <h3 class="mb-4 fw-bold text-primary">
-        <i class="bi bi-plus-circle"></i> Tạo Booking Mới
-      </h3>
+    <div class="card-container fade-in">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+              <h3 class="mb-1 fw-bold text-primary"><i class="bi bi-plus-circle"></i> Tạo Booking Mới</h3>
+              <p class="text-muted mb-0">Điền thông tin để tạo booking mới</p>
+          </div>
+          <a href="index.php?act=booking" class="btn btn-secondary btn-modern">
+              <i class="bi bi-arrow-left-circle"></i> Quay lại
+          </a>
+      </div>
 
       <?php if (isset($_SESSION['message'])): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -132,9 +202,9 @@ body {
       <form action="index.php?act=booking-store" method="POST" id="bookingForm">
         
         <!-- Loại booking -->
-        <div class="mb-4">
-          <label class="form-label fw-bold">Loại Booking</label>
-          <div class="btn-group" role="group">
+        <div class="form-section fade-in mb-4">
+          <h5 class="mb-3"><i class="bi bi-tags"></i> Loại Booking</h5>
+          <div class="btn-group w-100" role="group">
             <input type="radio" class="btn-check" name="booking_type" id="type_individual" value="individual" checked>
             <label class="btn btn-outline-primary" for="type_individual">
               <i class="bi bi-person"></i> Khách lẻ (1-2 người)
@@ -150,7 +220,8 @@ body {
         <div class="row">
           <!-- Thông tin Tour -->
           <div class="col-md-6">
-            <h5 class="mb-3 text-primary"><i class="bi bi-map"></i> Thông tin Tour</h5>
+            <div class="form-section fade-in">
+              <h5 class="mb-3"><i class="bi bi-map"></i> Thông tin Tour</h5>
             
             <div class="mb-3">
               <label class="form-label">Chọn Tour <span class="text-danger">*</span></label>
@@ -199,13 +270,15 @@ body {
               </small>
             </div>
 
-            <!-- Thông báo chỗ trống -->
-            <div id="availabilityAlert" class="alert d-none"></div>
+              <!-- Thông báo chỗ trống -->
+              <div id="availabilityAlert" class="alert d-none"></div>
+            </div>
           </div>
 
           <!-- Thông tin khách hàng -->
           <div class="col-md-6">
-            <h5 class="mb-3 text-primary"><i class="bi bi-person-circle"></i> Thông tin khách hàng</h5>
+            <div class="form-section fade-in">
+              <h5 class="mb-3"><i class="bi bi-person-circle"></i> Thông tin khách hàng</h5>
             
             <div class="mb-3">
               <label class="form-label">Họ tên <span class="text-danger">*</span></label>
@@ -242,8 +315,8 @@ body {
         </div>
 
         <!-- Số lượng khách -->
-        <div class="mb-4">
-          <h5 class="mb-3 text-primary"><i class="bi bi-people"></i> Số lượng khách</h5>
+        <div class="form-section fade-in mb-4">
+          <h5 class="mb-3"><i class="bi bi-people"></i> Số lượng khách</h5>
           <div class="row">
             <div class="col-md-4 mb-3">
               <label class="form-label">Người lớn <span class="text-danger">*</span></label>
@@ -262,8 +335,8 @@ body {
         </div>
 
         <!-- Danh sách khách (cho đoàn) -->
-        <div id="guestsList" style="display: none;">
-          <h5 class="mb-3 text-primary"><i class="bi bi-list-ul"></i> Danh sách khách (cho đoàn)</h5>
+        <div id="guestsList" class="form-section fade-in" style="display: none;">
+          <h5 class="mb-3"><i class="bi bi-list-ul"></i> Danh sách khách (cho đoàn)</h5>
           <div id="guestsContainer"></div>
           <button type="button" class="btn btn-sm btn-outline-primary" onclick="addGuest()">
             <i class="bi bi-plus"></i> Thêm khách
@@ -271,15 +344,21 @@ body {
         </div>
 
         <!-- Yêu cầu đặc biệt -->
-        <div class="mb-3">
-          <label class="form-label">Yêu cầu đặc biệt</label>
-          <textarea name="special_requests" class="form-control" rows="3" placeholder="Ví dụ: Ăn chay, yêu cầu phòng đơn, hỗ trợ xe lăn..."></textarea>
+        <div class="form-section fade-in mb-4">
+          <h5 class="mb-3"><i class="bi bi-exclamation-circle"></i> Yêu cầu đặc biệt</h5>
+          <div class="mb-3">
+            <label class="form-label">Yêu cầu đặc biệt</label>
+            <textarea name="special_requests" class="form-control" rows="3" placeholder="Ví dụ: Ăn chay, yêu cầu phòng đơn, hỗ trợ xe lăn..."></textarea>
+          </div>
         </div>
 
         <!-- Ghi chú -->
-        <div class="mb-3">
-          <label class="form-label">Ghi chú</label>
-          <textarea name="notes" class="form-control" rows="2"></textarea>
+        <div class="form-section fade-in mb-4">
+          <h5 class="mb-3"><i class="bi bi-sticky"></i> Ghi chú</h5>
+          <div class="mb-3">
+            <label class="form-label">Ghi chú</label>
+            <textarea name="notes" class="form-control" rows="2"></textarea>
+          </div>
         </div>
 
         <!-- Tóm tắt giá -->
@@ -288,11 +367,11 @@ body {
           <div id="priceDetails"></div>
         </div>
 
-        <div class="mt-4">
-          <button type="submit" class="btn btn-success btn-lg me-2">
+        <div class="mt-4 d-flex gap-2">
+          <button type="submit" class="btn btn-success btn-modern">
             <i class="bi bi-check-circle"></i> Tạo Booking
           </button>
-          <a href="index.php?act=booking" class="btn btn-secondary btn-lg">
+          <a href="index.php?act=booking" class="btn btn-secondary btn-modern">
             <i class="bi bi-arrow-left"></i> Quay lại
           </a>
         </div>

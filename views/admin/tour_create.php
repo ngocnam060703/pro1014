@@ -15,41 +15,111 @@ if (session_status() == PHP_SESSION_NONE) {
 
 <style>
 body {
-    background: linear-gradient(to right, #dfe9f3, #ffffff);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
     font-family: 'Segoe UI', sans-serif;
 }
 .sidebar {
     height: 100vh;
-    background: #343a40;
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
     padding-top: 20px;
+    position: fixed;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
 }
-.sidebar h4 { font-weight: 700; color:#fff; }
+.sidebar h4 { 
+    font-weight: 700; 
+    color: #fff; 
+    text-align: center;
+    margin-bottom: 30px;
+}
 .sidebar a {
-    color: #ccc;
-    padding: 12px;
+    color: #ecf0f1;
+    padding: 15px 20px;
     display: block;
     text-decoration: none;
     font-size: 15px;
     border-left: 3px solid transparent;
+    transition: all 0.3s;
 }
 .sidebar a:hover {
-    background: #495057;
+    background: rgba(255,255,255,0.1);
     color: #fff;
-    border-left: 3px solid #0d6efd;
+    border-left: 3px solid #3498db;
+    transform: translateX(5px);
 }
 .sidebar a.active {
-    color:#fff;
-    background:#495057;
-    border-left:3px solid #0d6efd;
+    color: #fff;
+    background: rgba(52, 152, 219, 0.2);
+    border-left: 3px solid #3498db;
 }
-
-.content { padding: 30px; }
-.card {
-    border-radius: 18px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+.content { 
+    padding: 30px; 
+    margin-left: 16.666667%;
 }
-.btn-success, .btn-secondary {
-    border-radius: 50px;
+.card-container {
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    margin-bottom: 20px;
+}
+.form-section {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 10px 15px;
+    transition: all 0.3s;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+.btn-modern {
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 500;
+    transition: all 0.3s;
+    border: none;
+}
+.btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+.btn-success {
+    background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+}
+.btn-success:hover {
+    background: linear-gradient(135deg, #20c997 0%, #198754 100%);
+}
+.itinerary-day {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    border-left: 4px solid #667eea;
+}
+.itinerary-day .card-header {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 12px 12px 0 0;
+    border-bottom: 2px solid #e9ecef;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
 }
 </style>
 </head>
@@ -59,7 +129,7 @@ body {
 
   <!-- SIDEBAR -->
   <div class="col-2 sidebar">
-    <h4 class="text-center mb-4">ADMIN</h4>
+    <h4 class="mb-4">ADMIN</h4>
     <a href="index.php?act=dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <a href="index.php?act=account"><i class="bi bi-people"></i> Quản lý tài khoản</a>
     <a href="index.php?act=guide"><i class="bi bi-person-badge"></i> Quản lý nhân viên</a>
@@ -70,17 +140,25 @@ body {
     <a href="index.php?act=special-request"><i class="bi bi-exclamation-circle"></i> Yêu cầu đặc biệt</a>
     <a href="index.php?act=guide-assign"><i class="bi bi-card-list"></i> Phân công HDV</a>
     <a href="index.php?act=guide-incident"><i class="bi bi-exclamation-triangle"></i> Danh sách sự cố</a>
-    <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')">
+    <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
       <i class="bi bi-box-arrow-right"></i> Đăng xuất
     </a>
   </div>
 
   <!-- CONTENT -->
   <div class="col-10 content">
-    <div class="card p-4">
-      <h3 class="mb-4 fw-bold text-primary">
-        <i class="bi bi-card-list"></i> <?= isset($tour) ? 'Sửa Tour' : 'Thêm Tour' ?>
-      </h3>
+    <div class="card-container fade-in">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+              <h3 class="mb-1 fw-bold text-primary">
+                  <i class="bi bi-<?= isset($tour) ? 'pencil-square' : 'plus-circle' ?>"></i> <?= isset($tour) ? 'Sửa Tour' : 'Thêm Tour' ?>
+              </h3>
+              <p class="text-muted mb-0"><?= isset($tour) ? 'Cập nhật thông tin tour' : 'Điền thông tin để tạo tour mới' ?></p>
+          </div>
+          <a href="index.php?act=tour" class="btn btn-secondary btn-modern">
+              <i class="bi bi-arrow-left-circle"></i> Quay lại
+          </a>
+      </div>
 
       <?php if(isset($_SESSION['error'])): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -101,48 +179,52 @@ body {
             <input type="hidden" name="id" value="<?= $tour['id'] ?>">
         <?php } ?>
 
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Mã Tour <span class="text-danger">*</span></label>
-            <input type="text" name="tour_code" id="tour_code" class="form-control" 
-                   value="<?= $tour['tour_code'] ?? '' ?>" 
-                   placeholder="Ví dụ: HN001, DN001, PQ001..." 
-                   required
-                   onchange="validateTourCode(this.value)">
-            <small class="form-text text-muted">
-              <span id="code-hint">Mã tour phải duy nhất, không được trùng với tour khác</span>
-            </small>
+        <div class="form-section fade-in">
+          <h5 class="mb-3"><i class="bi bi-info-circle"></i> Thông tin cơ bản</h5>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label"><i class="bi bi-tag"></i> Mã Tour <span class="text-danger">*</span></label>
+              <input type="text" name="tour_code" id="tour_code" class="form-control" 
+                     value="<?= $tour['tour_code'] ?? '' ?>" 
+                     placeholder="Ví dụ: HN001, DN001, PQ001..." 
+                     required
+                     onchange="validateTourCode(this.value)">
+              <small class="form-text text-muted">
+                <span id="code-hint">Mã tour phải duy nhất, không được trùng với tour khác</span>
+              </small>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label"><i class="bi bi-map"></i> Tên Tour (Chỉ địa điểm) <span class="text-danger">*</span></label>
+              <input type="text" name="title" id="tour_title" class="form-control" 
+                     value="<?= $tour['title'] ?? '' ?>" 
+                     placeholder="Ví dụ: Hà Nội, Đà Nẵng, Phú Quốc, Hạ Long..." 
+                     required
+                     onchange="validateTourTitle(this.value)">
+              <small class="form-text text-muted">
+                <span id="title-hint">⚠️ Mỗi địa điểm chỉ được có 1 tour duy nhất. Chỉ nhập tên địa điểm, không ghi "1 ngày 2 đêm" hay thông tin khác.</span>
+              </small>
+            </div>
           </div>
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Tên Tour (Chỉ địa điểm) <span class="text-danger">*</span></label>
-            <input type="text" name="title" id="tour_title" class="form-control" 
-                   value="<?= $tour['title'] ?? '' ?>" 
-                   placeholder="Ví dụ: Hà Nội, Đà Nẵng, Phú Quốc, Hạ Long..." 
-                   required
-                   onchange="validateTourTitle(this.value)">
-            <small class="form-text text-muted">
-              <span id="title-hint">⚠️ Mỗi địa điểm chỉ được có 1 tour duy nhất. Chỉ nhập tên địa điểm, không ghi "1 ngày 2 đêm" hay thông tin khác.</span>
-            </small>
+
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-file-text"></i> Mô tả <span class="text-danger">*</span></label>
+            <textarea name="description" class="form-control" rows="3" required><?= $tour['description'] ?? '' ?></textarea>
           </div>
-        </div>
 
-        <div class="mb-3">
-          <label class="form-label">Mô tả</label>
-          <textarea name="description" class="form-control" rows="3" required><?= $tour['description'] ?? '' ?></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Lịch trình tổng quan</label>
-          <textarea name="itinerary" class="form-control" rows="3" required><?= $tour['itinerary'] ?? '' ?></textarea>
+          <div class="mb-3">
+            <label class="form-label"><i class="bi bi-calendar3"></i> Lịch trình tổng quan <span class="text-danger">*</span></label>
+            <textarea name="itinerary" class="form-control" rows="3" required><?= $tour['itinerary'] ?? '' ?></textarea>
+          </div>
         </div>
 
         <!-- Lịch trình chi tiết theo ngày -->
-        <div class="mb-4">
-          <h5 class="mb-3 text-primary"><i class="bi bi-calendar-week"></i> Lịch trình chi tiết theo ngày</h5>
+        <div class="form-section fade-in mb-4">
+          <h5 class="mb-3"><i class="bi bi-calendar-week"></i> Lịch trình chi tiết theo ngày</h5>
           <div id="itinerary-days-container">
             <!-- Các ngày sẽ được thêm vào đây bằng JavaScript -->
           </div>
-          <button type="button" class="btn btn-outline-primary btn-sm" onclick="addItineraryDay()">
+          <button type="button" class="btn btn-primary btn-modern" onclick="addItineraryDay()">
             <i class="bi bi-plus-circle"></i> Thêm ngày
           </button>
           <small class="form-text text-muted d-block mt-2">
@@ -151,8 +233,8 @@ body {
         </div>
 
         <!-- Giá tour -->
-        <div class="mb-4">
-          <h5 class="mb-3 text-primary"><i class="bi bi-currency-dollar"></i> Giá tour</h5>
+        <div class="form-section fade-in mb-4">
+          <h5 class="mb-3"><i class="bi bi-currency-dollar"></i> Giá tour</h5>
           <div class="row">
             <div class="col-md-3 mb-3">
               <label class="form-label">Giá người lớn <span class="text-danger">*</span></label>
@@ -197,47 +279,57 @@ body {
           </div>
         </div>
 
-        <div class="row">
-          <div class="col mb-3">
-            <label class="form-label">Số chỗ <span class="text-muted">(7-50 chỗ)</span></label>
-            <input type="number" name="slots" class="form-control" value="<?= $tour['slots'] ?? '' ?>" 
-                   min="7" max="50" required 
-                   onchange="updateSeatsHint(this.value)">
-            <small class="form-text text-muted">
-              <span id="seats-hint">Gợi ý: Xe 7 chỗ, 16 chỗ, 29 chỗ, 35 chỗ, 45 chỗ, 50 chỗ</span>
-            </small>
+        <div class="form-section fade-in mb-4">
+          <h5 class="mb-3"><i class="bi bi-gear"></i> Thông tin khác</h5>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label"><i class="bi bi-people"></i> Số chỗ <span class="text-muted">(7-50 chỗ)</span> <span class="text-danger">*</span></label>
+              <input type="number" name="slots" class="form-control" value="<?= $tour['slots'] ?? '' ?>" 
+                     min="7" max="50" required 
+                     onchange="updateSeatsHint(this.value)">
+              <small class="form-text text-muted">
+                <span id="seats-hint">Gợi ý: Xe 7 chỗ, 16 chỗ, 29 chỗ, 35 chỗ, 45 chỗ, 50 chỗ</span>
+              </small>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label"><i class="bi bi-geo-alt"></i> Điểm khởi hành <span class="text-danger">*</span></label>
+              <input type="text" name="departure" class="form-control" value="<?= $tour['departure'] ?? '' ?>" required>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label"><i class="bi bi-tags"></i> Danh mục tour <span class="text-danger">*</span></label>
+              <select name="category" class="form-select" required>
+                <option value="domestic" <?= (isset($tour) && ($tour['category'] ?? '')=='domestic')?'selected':'' ?>>Tour trong nước</option>
+                <option value="international" <?= (isset($tour) && ($tour['category'] ?? '')=='international')?'selected':'' ?>>Tour quốc tế</option>
+                <option value="customized" <?= (isset($tour) && ($tour['category'] ?? '')=='customized')?'selected':'' ?>>Tour theo yêu cầu</option>
+              </select>
+              <small class="form-text text-muted">
+                <strong>Tour trong nước:</strong> Tour tham quan, du lịch các địa điểm trong nước.<br>
+                <strong>Tour quốc tế:</strong> Tour tham quan, du lịch các nước ngoài.<br>
+                <strong>Tour theo yêu cầu:</strong> Tour thiết kế riêng dựa trên yêu cầu cụ thể của từng khách hàng/đoàn khách.
+              </small>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label"><i class="bi bi-flag"></i> Trạng thái <span class="text-danger">*</span></label>
+              <select name="status" class="form-select">
+                <option value="active" <?= (isset($tour) && $tour['status']=='active')?'selected':'' ?>>Active</option>
+                <option value="inactive" <?= (isset($tour) && $tour['status']=='inactive')?'selected':'' ?>>Inactive</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label">Điểm khởi hành</label>
-          <input type="text" name="departure" class="form-control" value="<?= $tour['departure'] ?? '' ?>" required>
+        <div class="mt-4 d-flex gap-2">
+          <button type="submit" class="btn btn-success btn-modern">
+              <i class="bi bi-save"></i> <?= isset($tour) ? 'Cập nhật' : 'Lưu' ?>
+          </button>
+          <a href="index.php?act=tour" class="btn btn-secondary btn-modern">
+              <i class="bi bi-arrow-left"></i> Quay lại
+          </a>
         </div>
-
-        <div class="mb-3">
-          <label class="form-label">Danh mục tour</label>
-          <select name="category" class="form-select" required>
-            <option value="domestic" <?= (isset($tour) && ($tour['category'] ?? '')=='domestic')?'selected':'' ?>>Tour trong nước</option>
-            <option value="international" <?= (isset($tour) && ($tour['category'] ?? '')=='international')?'selected':'' ?>>Tour quốc tế</option>
-            <option value="customized" <?= (isset($tour) && ($tour['category'] ?? '')=='customized')?'selected':'' ?>>Tour theo yêu cầu</option>
-          </select>
-          <small class="form-text text-muted">
-            <strong>Tour trong nước:</strong> Tour tham quan, du lịch các địa điểm trong nước.<br>
-            <strong>Tour quốc tế:</strong> Tour tham quan, du lịch các nước ngoài.<br>
-            <strong>Tour theo yêu cầu:</strong> Tour thiết kế riêng dựa trên yêu cầu cụ thể của từng khách hàng/đoàn khách.
-          </small>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Trạng thái</label>
-          <select name="status" class="form-select">
-            <option value="active" <?= (isset($tour) && $tour['status']=='active')?'selected':'' ?>>Active</option>
-            <option value="inactive" <?= (isset($tour) && $tour['status']=='inactive')?'selected':'' ?>>Inactive</option>
-          </select>
-        </div>
-
-        <button type="submit" class="btn btn-success me-2"><i class="bi bi-save"></i> <?= isset($tour) ? 'Cập nhật' : 'Lưu' ?></button>
-        <a href="index.php?act=tour" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Quay lại</a>
       </form>
     </div>
   </div>
@@ -377,8 +469,8 @@ function addItineraryDay(dayData = null) {
     
     const dayHtml = `
         <div class="card mb-3 itinerary-day" data-day="${dayNumber}">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="bi bi-calendar-day"></i> Ngày ${dayNumber}</h6>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-calendar-day"></i> Ngày ${dayNumber}</h6>
                 <button type="button" class="btn btn-sm btn-danger" onclick="removeItineraryDay(this)">
                     <i class="bi bi-trash"></i> Xóa
                 </button>

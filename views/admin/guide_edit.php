@@ -18,46 +18,113 @@ $selectedCategories = array_column($categories, 'category_type');
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 <style>
-body { 
-    background: linear-gradient(to right, #dfe9f3, #ffffff);
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
     font-family: 'Segoe UI', sans-serif;
 }
 .sidebar {
     height: 100vh;
-    background: #343a40;
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
     padding-top: 20px;
+    position: fixed;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
 }
-.sidebar h4 { font-weight: 700; color:#fff; }
+.sidebar h4 { 
+    font-weight: 700; 
+    color: #fff; 
+    text-align: center;
+    margin-bottom: 30px;
+}
 .sidebar a {
-    color: #ccc;
-    padding: 12px;
+    color: #ecf0f1;
+    padding: 15px 20px;
     display: block;
     text-decoration: none;
     font-size: 15px;
     border-left: 3px solid transparent;
+    transition: all 0.3s;
 }
 .sidebar a:hover {
-    background: #495057;
+    background: rgba(255,255,255,0.1);
     color: #fff;
-    border-left: 3px solid #0d6efd;
+    border-left: 3px solid #3498db;
+    transform: translateX(5px);
 }
 .sidebar a.active {
-    color:#fff;
-    background:#495057;
-    border-left:3px solid #0d6efd;
+    color: #fff;
+    background: rgba(52, 152, 219, 0.2);
+    border-left: 3px solid #3498db;
 }
-.content { padding: 30px; }
-.card {
-    border-radius: 18px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+.content { 
+    padding: 30px; 
+    margin-left: 16.666667%;
 }
-.btn-primary, .btn-success, .btn-secondary {
-    border-radius: 50px;
+.card-container {
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    margin-bottom: 20px;
 }
-.btn-primary { background: linear-gradient(45deg,#5a5afc,#fc5a8d); border: none; }
-.btn-primary:hover { background: linear-gradient(45deg,#fc5a8d,#5a5afc); }
-.btn-success { background: linear-gradient(45deg,#28a745,#218838); border: none; color:#fff; }
-.btn-success:hover { background: linear-gradient(45deg,#218838,#28a745); color:#fff; }
+.nav-tabs {
+    border-bottom: 2px solid #e9ecef;
+}
+.nav-tabs .nav-link {
+    border: none;
+    color: #667eea;
+    font-weight: 500;
+    padding: 12px 24px;
+    transition: all 0.3s;
+}
+.nav-tabs .nav-link:hover {
+    border-color: transparent;
+    color: #764ba2;
+}
+.nav-tabs .nav-link.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-radius: 10px 10px 0 0;
+}
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 10px 15px;
+    transition: all 0.3s;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+.btn-modern {
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 500;
+    transition: all 0.3s;
+    border: none;
+}
+.btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+.btn-success {
+    background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+}
+.btn-success:hover {
+    background: linear-gradient(135deg, #20c997 0%, #198754 100%);
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
 </style>
 </head>
 <body>
@@ -76,33 +143,43 @@ body {
     <a href="index.php?act=special-request"><i class="bi bi-exclamation-circle"></i> Yêu cầu đặc biệt</a>
     <a href="index.php?act=guide-assign"><i class="bi bi-card-list"></i> Phân công HDV</a>
     <a href="index.php?act=guide-incident"><i class="bi bi-exclamation-triangle"></i> Danh sách sự cố</a>
-    <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')">
+    <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
       <i class="bi bi-box-arrow-right"></i> Đăng xuất
     </a>
   </div>
 
   <!-- CONTENT -->
   <div class="col-10 content">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold text-primary"><i class="bi bi-person-plus"></i> Sửa Hướng dẫn viên</h3>
-        <a href="index.php?act=guide" class="btn btn-secondary">
-            <i class="bi bi-arrow-left-circle"></i> Quay lại danh sách
-        </a>
-    </div>
+    <div class="card-container fade-in">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+              <h3 class="mb-1 fw-bold text-primary"><i class="bi bi-pencil-square"></i> Sửa Hướng dẫn viên</h3>
+              <p class="text-muted mb-0">Cập nhật thông tin nhân viên</p>
+          </div>
+          <a href="index.php?act=guide" class="btn btn-secondary btn-modern">
+              <i class="bi bi-arrow-left-circle"></i> Quay lại danh sách
+          </a>
+      </div>
 
-    <div class="card p-4">
+      <div class="card-container">
       <form action="index.php?act=guide-update" method="post" enctype="multipart/form-data">
           <input type="hidden" name="id" value="<?= $guide['id'] ?>">
 
           <ul class="nav nav-tabs mb-4" id="guideTabs" role="tablist">
               <li class="nav-item" role="presentation">
-                  <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button">Thông tin cơ bản</button>
+                  <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button">
+                      <i class="bi bi-info-circle"></i> Thông tin cơ bản
+                  </button>
               </li>
               <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail" type="button">Thông tin chi tiết</button>
+                  <button class="nav-link" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail" type="button">
+                      <i class="bi bi-file-text"></i> Thông tin chi tiết
+                  </button>
               </li>
               <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="category-tab" data-bs-toggle="tab" data-bs-target="#category" type="button">Phân loại</button>
+                  <button class="nav-link" id="category-tab" data-bs-toggle="tab" data-bs-target="#category" type="button">
+                      <i class="bi bi-tags"></i> Phân loại
+                  </button>
               </li>
           </ul>
 
@@ -234,55 +311,55 @@ body {
               <div class="tab-pane fade" id="category" role="tabpanel">
                   <div class="mb-3">
                       <label class="form-label">Phân loại HDV <span class="text-muted">(có thể chọn nhiều)</span></label>
-                      <div class="form-check">
+                      <div class="form-check mb-2">
                           <input class="form-check-input" type="checkbox" name="categories[]" value="domestic" id="cat_domestic" 
                                  <?= in_array('domestic', $selectedCategories) ? 'checked' : '' ?>>
                           <label class="form-check-label" for="cat_domestic">
-                              Tour trong nước
+                              <i class="bi bi-geo-alt"></i> Tour trong nước
                           </label>
                       </div>
-                      <div class="form-check">
+                      <div class="form-check mb-2">
                           <input class="form-check-input" type="checkbox" name="categories[]" value="international" id="cat_international"
                                  <?= in_array('international', $selectedCategories) ? 'checked' : '' ?>>
                           <label class="form-check-label" for="cat_international">
-                              Tour quốc tế
+                              <i class="bi bi-globe"></i> Tour quốc tế
                           </label>
                       </div>
-                      <div class="form-check">
+                      <div class="form-check mb-2">
                           <input class="form-check-input" type="checkbox" name="categories[]" value="specialized_route" id="cat_specialized"
                                  <?= in_array('specialized_route', $selectedCategories) ? 'checked' : '' ?>>
                           <label class="form-check-label" for="cat_specialized">
-                              Chuyên tuyến
+                              <i class="bi bi-signpost"></i> Chuyên tuyến
                           </label>
                       </div>
-                      <div class="form-check">
+                      <div class="form-check mb-2">
                           <input class="form-check-input" type="checkbox" name="categories[]" value="group_tour" id="cat_group"
                                  <?= in_array('group_tour', $selectedCategories) ? 'checked' : '' ?>>
                           <label class="form-check-label" for="cat_group">
-                              Chuyên khách đoàn
+                              <i class="bi bi-people"></i> Chuyên khách đoàn
                           </label>
                       </div>
-                      <div class="form-check">
+                      <div class="form-check mb-2">
                           <input class="form-check-input" type="checkbox" name="categories[]" value="customized" id="cat_customized"
                                  <?= in_array('customized', $selectedCategories) ? 'checked' : '' ?>>
                           <label class="form-check-label" for="cat_customized">
-                              Tour theo yêu cầu
+                              <i class="bi bi-gear"></i> Tour theo yêu cầu
                           </label>
                       </div>
                   </div>
               </div>
           </div>
 
-          <div class="mt-4">
-              <button type="submit" class="btn btn-success">
+          <div class="mt-4 d-flex gap-2">
+              <button type="submit" class="btn btn-success btn-modern">
                   <i class="bi bi-save"></i> Lưu thay đổi
               </button>
-              <a href="index.php?act=guide" class="btn btn-secondary">Hủy</a>
+              <a href="index.php?act=guide" class="btn btn-secondary btn-modern">Hủy</a>
           </div>
       </form>
+      </div>
     </div>
   </div>
-
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

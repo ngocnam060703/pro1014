@@ -3,13 +3,13 @@ if (session_status() == PHP_SESSION_NONE) session_start();
 
 function getStatusBadge($status) {
     $badges = [
-        'scheduled' => '<span class="badge bg-warning text-dark">Chưa bắt đầu</span>',
-        'in_progress' => '<span class="badge bg-info">Đang chạy</span>',
-        'completed' => '<span class="badge bg-success">Đã kết thúc</span>',
-        'paused' => '<span class="badge bg-secondary">Tạm dừng</span>',
-        'cancelled' => '<span class="badge bg-danger">Đã hủy</span>'
+        'scheduled' => '<span class="badge badge-modern badge-warning">Chưa bắt đầu</span>',
+        'in_progress' => '<span class="badge badge-modern badge-info">Đang chạy</span>',
+        'completed' => '<span class="badge badge-modern badge-success">Đã kết thúc</span>',
+        'paused' => '<span class="badge badge-modern badge-secondary">Tạm dừng</span>',
+        'cancelled' => '<span class="badge badge-modern badge-danger">Đã hủy</span>'
     ];
-    return $badges[$status] ?? '<span class="badge bg-secondary">N/A</span>';
+    return $badges[$status] ?? '<span class="badge badge-modern badge-secondary">N/A</span>';
 }
 
 function getChangeTypeName($type) {
@@ -33,60 +33,137 @@ function getChangeTypeName($type) {
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 <style>
 body {
-    background: linear-gradient(to right, #dfe9f3, #ffffff);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
     font-family: 'Segoe UI', sans-serif;
 }
 .sidebar {
     height: 100vh;
-    background: #343a40;
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
     padding-top: 20px;
+    position: fixed;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
 }
-.sidebar h4 { font-weight: 700; color:#fff; }
+.sidebar h4 { 
+    font-weight: 700; 
+    color: #fff; 
+    text-align: center;
+    margin-bottom: 30px;
+}
 .sidebar a {
-    color: #ccc;
-    padding: 12px;
+    color: #ecf0f1;
+    padding: 15px 20px;
     display: block;
     text-decoration: none;
     font-size: 15px;
     border-left: 3px solid transparent;
+    transition: all 0.3s;
 }
 .sidebar a:hover {
-    background: #495057;
+    background: rgba(255,255,255,0.1);
     color: #fff;
-    border-left: 3px solid #0d6efd;
+    border-left: 3px solid #3498db;
+    transform: translateX(5px);
 }
 .sidebar a.active {
-    color:#fff;
-    background:#495057;
-    border-left:3px solid #0d6efd;
+    color: #fff;
+    background: rgba(52, 152, 219, 0.2);
+    border-left: 3px solid #3498db;
 }
-.content { padding: 30px; }
-.card {
-    border-radius: 18px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+.content { 
+    padding: 30px; 
+    margin-left: 16.666667%;
+}
+.card-container {
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     margin-bottom: 20px;
 }
 .info-section {
-    background: #f8f9fa;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 12px;
     margin-bottom: 15px;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
 }
 .info-label {
     font-weight: 600;
-    color: #495057;
-    margin-bottom: 5px;
+    color: #667eea;
+    margin-bottom: 8px;
 }
 .info-value {
     color: #212529;
     font-size: 16px;
+    font-weight: 500;
 }
 .log-entry {
-    border-left: 4px solid #0d6efd;
-    padding: 15px;
+    border-left: 4px solid #667eea;
+    padding: 20px;
     margin-bottom: 15px;
-    background: #f8f9fa;
-    border-radius: 5px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+.badge-modern {
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+.badge-warning { background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); color: #212529; }
+.badge-info { background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%); }
+.badge-success { background: linear-gradient(135deg, #198754 0%, #20c997 100%); }
+.badge-secondary { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); }
+.table-container {
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+}
+.table thead th {
+    border: none;
+    padding: 15px;
+    font-weight: 600;
+}
+.table tbody tr {
+    transition: all 0.3s;
+}
+.table tbody tr:hover {
+    background: linear-gradient(to right, #f8f9ff 0%, #fff 50%);
+}
+.btn-modern {
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 500;
+    transition: all 0.3s;
+    border: none;
+}
+.btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.btn-primary:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
 }
 </style>
 </head>
@@ -95,7 +172,7 @@ body {
 
   <!-- SIDEBAR -->
   <div class="col-2 sidebar">
-    <h4 class="text-center mb-4">ADMIN</h4>
+    <h4 class="mb-4">ADMIN</h4>
     <a href="index.php?act=dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <a href="index.php?act=account"><i class="bi bi-people"></i> Quản lý tài khoản</a>
     <a href="index.php?act=guide"><i class="bi bi-person-badge"></i> Quản lý nhân viên</a>
@@ -106,18 +183,27 @@ body {
     <a href="index.php?act=special-request"><i class="bi bi-exclamation-circle"></i> Yêu cầu đặc biệt</a>
     <a href="index.php?act=guide-assign" class="active"><i class="bi bi-card-list"></i> Phân công HDV</a>
     <a href="index.php?act=guide-incident"><i class="bi bi-exclamation-triangle"></i> Danh sách sự cố</a>
-    <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')">
+    <a href="?act=logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất không?')" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
       <i class="bi bi-box-arrow-right"></i> Đăng xuất
     </a>
   </div>
 
   <!-- CONTENT -->
   <div class="col-10 content">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h3 class="fw-bold"><i class="bi bi-info-circle"></i> Chi tiết phân công HDV</h3>
-      <div>
-        <a href="index.php?act=guide-assign-edit&id=<?= $assignment['id'] ?>" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Chỉnh sửa</a>
-        <a href="index.php?act=guide-assign" class="btn btn-secondary"><i class="bi bi-arrow-left-circle"></i> Quay lại</a>
+    <div class="card-container fade-in mb-4">
+      <div class="d-flex justify-content-between align-items-center">
+          <div>
+              <h3 class="mb-1 fw-bold text-primary"><i class="bi bi-info-circle"></i> Chi tiết phân công HDV</h3>
+              <p class="text-muted mb-0">Thông tin chi tiết về phân công</p>
+          </div>
+          <div>
+              <a href="index.php?act=guide-assign-edit&id=<?= $assignment['id'] ?>" class="btn btn-primary btn-modern me-2">
+                  <i class="bi bi-pencil-square"></i> Chỉnh sửa
+              </a>
+              <a href="index.php?act=guide-assign" class="btn btn-secondary btn-modern">
+                  <i class="bi bi-arrow-left-circle"></i> Quay lại
+              </a>
+          </div>
       </div>
     </div>
 
@@ -129,7 +215,7 @@ body {
     <?php endif; ?>
 
     <!-- Thông tin Tour -->
-    <div class="card p-4">
+    <div class="card-container fade-in">
       <h5 class="mb-4"><i class="bi bi-map"></i> Thông tin Tour</h5>
       <div class="row">
         <div class="col-md-6 info-section">
@@ -144,7 +230,7 @@ body {
     </div>
 
     <!-- Lịch khởi hành -->
-    <div class="card p-4">
+    <div class="card-container fade-in">
       <h5 class="mb-4"><i class="bi bi-calendar-event"></i> Lịch khởi hành</h5>
       <div class="row">
         <div class="col-md-4 info-section">
@@ -214,7 +300,7 @@ body {
     </div>
 
     <!-- Thông tin HDV -->
-    <div class="card p-4">
+    <div class="card-container fade-in">
       <h5 class="mb-4"><i class="bi bi-person-badge"></i> Thông tin HDV</h5>
       <div class="row">
         <div class="col-md-4 info-section">
@@ -233,7 +319,7 @@ body {
     </div>
 
     <!-- Thông tin phân công -->
-    <div class="card p-4">
+    <div class="card-container fade-in">
       <h5 class="mb-4"><i class="bi bi-clipboard-check"></i> Thông tin phân công</h5>
       <div class="row">
         <div class="col-md-4 info-section">
@@ -267,10 +353,11 @@ body {
 
     <!-- Các lần thay hướng dẫn viên -->
     <?php if(!empty($guideChanges)): ?>
-    <div class="card p-4">
+    <div class="card-container fade-in">
       <h5 class="mb-4"><i class="bi bi-arrow-left-right"></i> Các lần thay hướng dẫn viên</h5>
-      <div class="table-responsive">
-        <table class="table table-bordered">
+      <div class="table-container">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
           <thead>
             <tr>
               <th>STT</th>
@@ -295,11 +382,12 @@ body {
           </tbody>
         </table>
       </div>
+      </div>
     </div>
     <?php endif; ?>
 
     <!-- Nhật ký thay đổi -->
-    <div class="card p-4">
+    <div class="card-container fade-in">
       <h5 class="mb-4"><i class="bi bi-clock-history"></i> Nhật ký thay đổi</h5>
       <?php if(!empty($logs)): ?>
         <?php foreach($logs as $log): ?>
