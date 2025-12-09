@@ -50,3 +50,4 @@ AND gj2.journal_date IS NULL;
 SELECT '✅ Đã xử lý dữ liệu trùng lặp thành công!' as message;
 SELECT 'Bây giờ bạn có thể chạy update_guide_journal_system.sql' as next_step;
 
+
