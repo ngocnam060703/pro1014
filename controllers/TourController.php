@@ -263,33 +263,9 @@ class TourController {
             exit();
         }
         
-        // VALIDATION: Kiểm tra tour có đang chạy không
-        require_once "models/ScheduleModel.php";
-        $scheduleModel = new ScheduleModel();
-        $activeDepartures = $scheduleModel->getActiveDeparturesByTourId($id);
-        
-        if (!empty($activeDepartures)) {
-            // Kiểm tra xem có thay đổi giá không
-            $tour = $this->tourModel->getTourById($id);
-            $oldAdultPrice = floatval($tour['adult_price'] ?? 0);
-            $oldChildPrice = floatval($tour['child_price'] ?? 0);
-            $oldInfantPrice = floatval($tour['infant_price'] ?? 0);
-            $oldSurcharge = floatval($tour['surcharge'] ?? 0);
-            
-            $newAdultPrice = floatval($data['adult_price'] ?? 0);
-            $newChildPrice = floatval($data['child_price'] ?? 0);
-            $newInfantPrice = floatval($data['infant_price'] ?? 0);
-            $newSurcharge = floatval($data['surcharge'] ?? 0);
-            
-            if ($oldAdultPrice != $newAdultPrice || 
-                $oldChildPrice != $newChildPrice || 
-                $oldInfantPrice != $newInfantPrice || 
-                $oldSurcharge != $newSurcharge) {
-                $_SESSION['error'] = "Không thể sửa giá khi tour đang chạy (có lịch khởi hành đang diễn ra). Vui lòng đợi tour kết thúc.";
-                header("Location: index.php?act=tour-edit&id=" . $id);
-                exit();
-            }
-        }
+        // BUSINESS RULE: Cập nhật giá tour không ảnh hưởng departure
+        // (Mỗi departure có giá riêng, nên cho phép cập nhật giá tour)
+        // Không cần kiểm tra active departures vì giá tour chỉ là giá mặc định
         
         // VALIDATION: Kiểm tra các trường giá
         $adultPrice = floatval($data['adult_price'] ?? 0);
@@ -406,8 +382,28 @@ class TourController {
     }
 
     public function delete() {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        
         $id = $_GET["id"] ?? null;
-        if ($id) $this->tourModel->deleteTour($id);
+        if (!$id) {
+            header("Location: index.php?act=tour");
+            exit();
+        }
+        
+        // BUSINESS RULE: Không được xóa tour nếu có departure
+        require_once "models/ScheduleModel.php";
+        $scheduleModel = new ScheduleModel();
+        $departures = $scheduleModel->getByTourId($id);
+        
+        if (!empty($departures)) {
+            $_SESSION['error'] = "Không thể xóa tour vì đang có " . count($departures) . " lịch khởi hành. Vui lòng xóa tất cả lịch khởi hành trước.";
+            header("Location: index.php?act=tour");
+            exit();
+        }
+        
+        $this->tourModel->deleteTour($id);
         $_SESSION['message'] = "Tour đã được xóa thành công!";
         header("Location: index.php?act=tour");
         exit();

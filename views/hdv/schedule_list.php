@@ -224,7 +224,9 @@ body {
           <?php foreach($schedules as $i => $sch): ?>
             <?php
             // Kiểm tra xem assignment có mới không (tạo trong 24h qua)
+            // Sử dụng assigned_at để xác định phân công mới
             $isNew = false;
+            $assignedTime = null;
             if (!empty($sch['assigned_at'])) {
                 $assignedTime = strtotime($sch['assigned_at']);
                 $hoursAgo = (time() - $assignedTime) / 3600;
@@ -316,11 +318,16 @@ body {
                 </div>
                 <?php endif; ?>
 
-                <?php if(!empty($sch['assigned_at'])): ?>
+                <?php if($assignedTime): ?>
                 <div class="info-item">
                   <i class="bi bi-person-check"></i>
                   <div>
-                    <small class="text-muted">Phân công: <?= date('d/m/Y H:i', strtotime($sch['assigned_at'])) ?></small>
+                    <small class="text-muted">
+                      Phân công: <?= date('d/m/Y H:i', $assignedTime) ?>
+                      <?php if($isNew): ?>
+                        <span class="badge bg-success ms-2">Mới</span>
+                      <?php endif; ?>
+                    </small>
                   </div>
                 </div>
                 <?php endif; ?>
@@ -360,7 +367,7 @@ function toggleAutoRefresh() {
     } else {
         autoRefreshInterval = setInterval(() => {
             location.reload();
-        }, 30000); // Refresh mỗi 30 giây
+        }, 30000); // Refresh mỗi 30 giây để cập nhật phân công mới
         document.getElementById('autoRefreshBtn').innerHTML = '<i class="bi bi-play-circle"></i> Tắt tự động làm mới';
         document.getElementById('autoRefreshBtn').classList.remove('btn-outline-secondary');
         document.getElementById('autoRefreshBtn').classList.add('btn-success');
@@ -371,8 +378,29 @@ function toggleAutoRefresh() {
 document.addEventListener('DOMContentLoaded', function() {
     const newAssignments = document.querySelectorAll('.new-assignment');
     if (newAssignments.length > 0) {
-        console.log('Có <?= count(array_filter($schedules ?? [], function($sch) { return !empty($sch['assigned_at']) && (time() - strtotime($sch['assigned_at'])) / 3600 <= 24; })) ?? 0 ?> phân công mới!');
+        // Hiển thị thông báo nếu có phân công mới
+        const newCount = newAssignments.length;
+        if (newCount > 0) {
+            // Tạo toast notification
+            const toast = document.createElement('div');
+            toast.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                <i class="bi bi-bell-fill"></i> 
+                Bạn có <strong>${newCount}</strong> phân công mới được cập nhật!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(toast);
+            
+            // Tự động ẩn sau 5 giây
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
     }
+    
+    // Lưu số lượng assignment hiện tại
+    lastAssignmentCount = document.querySelectorAll('.schedule-card').length;
 });
 </script>
 </body>

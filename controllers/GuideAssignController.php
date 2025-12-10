@@ -221,6 +221,13 @@ class GuideAssignController {
             session_start();
         }
         
+        // BUSINESS RULE: Phải chọn lịch khởi hành khi phân công HDV
+        if (empty($_POST["departure_id"])) {
+            $_SESSION['error'] = "Vui lòng chọn Lịch khởi hành trước khi phân công HDV!";
+            header("Location: index.php?act=guide-assign-create");
+            exit();
+        }
+        
         $guide_id = $_POST["guide_id"];
         $departure_id = $_POST["departure_id"];
         $note = $_POST["note"] ?? '';

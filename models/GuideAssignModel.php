@@ -166,7 +166,8 @@ class GuideAssignModel {
         
         // Query đảm bảo lấy TẤT CẢ phân công của guide (trừ cancelled)
         // Sử dụng INNER JOIN để đảm bảo chỉ lấy phân công có departure và tour hợp lệ
-        // ORDER BY assigned_at DESC để phân công mới nhất hiển thị trước (nếu cùng departure_time)
+        // ORDER BY assigned_at DESC để phân công mới nhất hiển thị trước
+        // Nếu assigned_at NULL thì dùng created_at hoặc id DESC để đảm bảo phân công mới luôn hiển thị
         // Đảm bảo tour_code và title không giống nhau - nếu tour_code null hoặc giống title thì dùng tour_id làm mã
         $sql = "SELECT 
                     ga.*,
@@ -199,7 +200,9 @@ class GuideAssignModel {
                 INNER JOIN departures d ON ga.departure_id = d.id
                 INNER JOIN tours t ON d.tour_id = t.id
                 WHERE $whereClause
-                ORDER BY ga.assigned_at DESC, d.departure_time DESC";
+                ORDER BY 
+                    COALESCE(ga.assigned_at, '1970-01-01 00:00:00') DESC,
+                    ga.id DESC";
         
         $result = pdo_query($sql, ...$params);
         
