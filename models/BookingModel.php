@@ -128,6 +128,11 @@ class BookingModel {
         $result = pdo_execute($sql, ...$params);
         
         if ($result) {
+            // BUSINESS RULE: Cập nhật số chỗ của departure khi thay đổi trạng thái booking
+            if (!empty($booking['departure_id'])) {
+                $this->updateDepartureSlots($booking['departure_id']);
+            }
+            
             // Lưu lịch sử thay đổi
             require_once __DIR__ . "/BookingStatusHistoryModel.php";
             $historyModel = new BookingStatusHistoryModel();
@@ -350,6 +355,44 @@ class BookingModel {
 
     // Tạo booking mới
     public function createBooking($data) {
+        // BUSINESS RULE: Bắt buộc chọn Lịch khởi hành
+        if (empty($data['departure_id'])) {
+            return [
+                'success' => false,
+                'message' => 'Vui lòng chọn Lịch khởi hành trước khi tạo booking!'
+            ];
+        }
+        
+        // Kiểm tra số chỗ còn lại của departure
+        $departure_sql = "SELECT total_seats, seats_available, seats_booked FROM departures WHERE id = ?";
+        $departure = pdo_query_one($departure_sql, $data['departure_id']);
+        
+        if (!$departure) {
+            return [
+                'success' => false,
+                'message' => 'Không tìm thấy lịch khởi hành!'
+            ];
+        }
+        
+        $numPeople = (int)($data['num_people'] ?? 0);
+        $seatsAvailable = (int)($departure['seats_available'] ?? 0);
+        
+        // BUSINESS RULE: Không được đặt nếu số chỗ còn lại = 0
+        if ($seatsAvailable <= 0) {
+            return [
+                'success' => false,
+                'message' => 'Lịch khởi hành này đã hết chỗ!'
+            ];
+        }
+        
+        // BUSINESS RULE: Không được đặt nếu số người vượt quá số chỗ còn lại
+        if ($numPeople > $seatsAvailable) {
+            return [
+                'success' => false,
+                'message' => "Chỉ còn {$seatsAvailable} chỗ trống, không đủ cho {$numPeople} người!"
+            ];
+        }
+        
         // VALIDATION: Không được tạo booking mới nếu tour đã đầy chỗ và đã khóa thanh toán
         // Kiểm tra chỗ trống
         $availability = $this->checkAvailability(
@@ -480,6 +523,11 @@ class BookingModel {
                     $this->saveBookingGuests($booking_id, $data['guests']);
                 }
                 
+                // BUSINESS RULE: Khi thêm booking → trừ available_slots của departure
+                if (!empty($data['departure_id'])) {
+                    $this->updateDepartureSlots($data['departure_id']);
+                }
+                
                 return [
                     'success' => true,
                     'booking_id' => $booking_id,
@@ -537,5 +585,32 @@ class BookingModel {
     public function getBookingGuests($booking_id) {
         $sql = "SELECT * FROM booking_guests WHERE booking_id = ? ORDER BY id ASC";
         return pdo_query($sql, $booking_id);
+    }
+    
+    // Cập nhật số chỗ của departure dựa trên các booking hiện có
+    private function updateDepartureSlots($departure_id) {
+        // Lấy tất cả booking của departure (chưa hủy)
+        $bookings = $this->getByDepartureId($departure_id);
+        
+        // Tính tổng số người từ các booking chưa hủy
+        $totalBooked = 0;
+        foreach ($bookings as $booking) {
+            if ($booking['status'] != 'cancelled') {
+                $totalBooked += (int)($booking['num_people'] ?? 0);
+            }
+        }
+        
+        // Lấy thông tin departure hiện tại
+        $departure_sql = "SELECT total_seats FROM departures WHERE id = ?";
+        $departure = pdo_query_one($departure_sql, $departure_id);
+        
+        if ($departure) {
+            $totalSeats = (int)$departure['total_seats'];
+            $seatsAvailable = max(0, $totalSeats - $totalBooked);
+            
+            // Cập nhật seats_booked và seats_available
+            $update_sql = "UPDATE departures SET seats_booked = ?, seats_available = ? WHERE id = ?";
+            pdo_execute($update_sql, $totalBooked, $seatsAvailable, $departure_id);
+        }
     }
 }

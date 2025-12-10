@@ -44,6 +44,13 @@ class ScheduleController {
         
         $data = $_POST;
         
+        // BUSINESS RULE: Bắt buộc chọn Tour trước
+        if (empty($data['tour_id'])) {
+            $_SESSION['error'] = "Vui lòng chọn Tour trước khi tạo lịch khởi hành!";
+            header("Location: index.php?act=schedule-create");
+            exit();
+        }
+        
         // Kiểm tra ngày khởi hành không được quá khứ
         if (!empty($data['departure_time'])) {
             $data['departure_time'] = str_replace("T", " ", $data['departure_time']);
@@ -90,6 +97,7 @@ class ScheduleController {
         $seatsBooked = (int)($data['seats_booked'] ?? 0);
         $data['seats_available'] = max(0, $totalSeats - $seatsBooked);
         $data['total_seats'] = $totalSeats;
+        
         $this->model->insert($data);
         $_SESSION['message'] = "Lịch trình đã được thêm thành công!";
         header("Location: index.php?act=schedule");
@@ -155,10 +163,66 @@ class ScheduleController {
             exit();
         }
         
-        // Tự động tính số chỗ còn = tổng số chỗ - số chỗ đã đặt
-        $seatsBooked = (int)($data['seats_booked'] ?? 0);
-        $data['seats_available'] = max(0, $totalSeats - $seatsBooked);
+        // BUSINESS RULE: Thay đổi số chỗ → phải cập nhật theo các booking hiện có
+        // Lấy số chỗ đã đặt từ các booking hiện có
+        require_once "models/BookingModel.php";
+        $bookingModel = new BookingModel();
+        $bookings = $bookingModel->getByDepartureId($id);
+        
+        // Tính tổng số người từ các booking (chỉ tính booking chưa hủy)
+        $actualSeatsBooked = 0;
+        foreach ($bookings as $booking) {
+            if ($booking['status'] != 'cancelled') {
+                $actualSeatsBooked += (int)($booking['num_people'] ?? 0);
+            }
+        }
+        
+        // Cập nhật seats_booked và seats_available
+        $data['seats_booked'] = $actualSeatsBooked;
+        $data['seats_available'] = max(0, $totalSeats - $actualSeatsBooked);
         $data['total_seats'] = $totalSeats;
+        
+        // Kiểm tra nếu số chỗ mới nhỏ hơn số chỗ đã đặt
+        if ($actualSeatsBooked > $totalSeats) {
+            $_SESSION['error'] = "Không thể giảm số chỗ xuống " . $totalSeats . " vì đã có " . $actualSeatsBooked . " chỗ được đặt. Vui lòng tăng số chỗ hoặc hủy một số booking.";
+            header("Location: index.php?act=schedule-edit&id=" . $id);
+            exit();
+        }
+        
+        // BUSINESS RULE: Khi đổi ngày → phải kiểm tra lại phân công HDV (tránh trùng lịch)
+        $oldSchedule = $this->model->getById($id);
+        if ($oldSchedule) {
+            $oldDepartureTime = $oldSchedule['departure_time'] ?? '';
+            $newDepartureTime = $data['departure_time'] ?? '';
+            
+            // Nếu ngày khởi hành thay đổi, kiểm tra xung đột với HDV
+            if ($oldDepartureTime != $newDepartureTime) {
+                require_once "models/GuideAssignModel.php";
+                $assignModel = new GuideAssignModel();
+                
+                // Lấy tất cả phân công HDV của departure này
+                $assignments = pdo_query(
+                    "SELECT * FROM guide_assign WHERE departure_id = ?",
+                    $id
+                );
+                
+                foreach ($assignments as $assignment) {
+                    // Kiểm tra xung đột với các departure khác
+                    $conflict = $assignModel->hasScheduleConflict(
+                        $assignment['guide_id'],
+                        $id,
+                        $assignment['id'] // Exclude chính nó
+                    );
+                    
+                    if ($conflict['has_conflict']) {
+                        $_SESSION['error'] = "Không thể đổi ngày khởi hành vì HDV đã được phân công có lịch trùng: " . $conflict['message'];
+                        header("Location: index.php?act=schedule-edit&id=" . $id);
+                        exit();
+                    }
+                }
+            }
+        }
+        
         $this->model->update($id, $data);
         $_SESSION['message'] = "Lịch trình đã được cập nhật thành công!";
         header("Location: index.php?act=schedule");

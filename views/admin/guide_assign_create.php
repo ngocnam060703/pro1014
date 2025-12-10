@@ -372,6 +372,8 @@ body {
         <input type="hidden" name="meeting_point" id="meeting_point">
         <input type="hidden" name="max_people" id="max_people">
         <input type="hidden" name="status" value="scheduled">
+        <!-- Hidden field để lưu guide_id vì select có thể bị disabled -->
+        <input type="hidden" name="guide_id" id="guide_id_hidden">
 
         <!-- BƯỚC 5: Xác nhận -->
         <div class="d-flex justify-content-between mt-4">
@@ -526,6 +528,9 @@ function loadGuideInfo() {
     const guideId = document.getElementById('guide_id').value;
     selectedGuideId = guideId;
     
+    // Cập nhật hidden field để đảm bảo giá trị được gửi khi submit
+    document.getElementById('guide_id_hidden').value = guideId;
+    
     if (!guideId) {
         document.getElementById('guide-info-box').style.display = 'none';
         canSubmit = false;
@@ -632,7 +637,19 @@ function updateSubmitButton() {
 }
 
 // Form validation
+// Đảm bảo guide_id được gửi khi submit (ngay cả khi select bị disabled)
 document.getElementById('assignForm').addEventListener('submit', function(e) {
+    // Copy giá trị từ select vào hidden field trước khi submit
+    const guideIdSelect = document.getElementById('guide_id');
+    const guideIdHidden = document.getElementById('guide_id_hidden');
+    if (guideIdSelect && guideIdHidden) {
+        guideIdHidden.value = guideIdSelect.value;
+    }
+    
+    // Enable select tạm thời để đảm bảo giá trị được gửi
+    if (guideIdSelect && guideIdSelect.disabled) {
+        guideIdSelect.disabled = false;
+    }
     if (!canSubmit) {
         e.preventDefault();
         alert('Vui lòng hoàn thành tất cả các bước và đảm bảo không có cảnh báo!');

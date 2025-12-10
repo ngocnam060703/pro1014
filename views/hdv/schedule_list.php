@@ -141,15 +141,26 @@ body {
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h3 class="mb-1 fw-bold text-primary"><i class="bi bi-calendar-event"></i> Lịch làm việc của tôi</h3>
-          <p class="text-muted mb-0">Tổng số: <strong><?= count($schedules ?? []) ?></strong> tour được phân công</p>
+          <p class="text-muted mb-0">
+            Tổng số: <strong><?= count($schedules ?? []) ?></strong> tour được phân công
+            <?php if(!empty($schedules)): ?>
+              | Phân công mới nhất: <?= !empty($schedules[0]['assigned_at']) ? date('d/m/Y H:i', strtotime($schedules[0]['assigned_at'])) : 'N/A' ?>
+            <?php endif; ?>
+            <?php if(isset($_SESSION['guide']['id'])): ?>
+              | <small>Guide ID: <?= $_SESSION['guide']['id'] ?></small>
+            <?php endif; ?>
+          </p>
         </div>
         <div class="d-flex gap-2">
-          <button type="button" class="btn btn-primary" onclick="location.reload()" title="Làm mới danh sách">
+          <button type="button" class="btn btn-primary" onclick="location.reload()" title="Làm mới danh sách ngay lập tức">
             <i class="bi bi-arrow-clockwise"></i> Làm mới
           </button>
-          <button type="button" class="btn btn-outline-secondary" id="autoRefreshBtn" onclick="toggleAutoRefresh()" title="Tự động làm mới mỗi 30 giây">
+          <button type="button" class="btn btn-outline-secondary" id="autoRefreshBtn" onclick="toggleAutoRefresh()" title="Tự động kiểm tra phân công mới mỗi 30 giây">
             <i class="bi bi-pause-circle"></i> Bật tự động làm mới
           </button>
+          <span id="lastUpdateTime" class="text-muted small align-self-center ms-2">
+            <i class="bi bi-clock"></i> Cập nhật: <?= date('H:i:s') ?>
+          </span>
         </div>
       </div>
 
@@ -163,6 +174,28 @@ body {
       <?php if(isset($_SESSION['message'])): ?>
         <div class="alert alert-success alert-dismissible fade show">
           <i class="bi bi-check-circle"></i> <?= $_SESSION['message']; unset($_SESSION['message']); ?>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <?php endif; ?>
+
+      <?php 
+      // DEBUG: Hiển thị thông tin debug (có thể xóa sau)
+      $debugGuideId = $_SESSION['guide']['id'] ?? 0;
+      $debugCount = count($schedules ?? []);
+      if ($debugCount == 0 && $debugGuideId > 0):
+        // Kiểm tra trực tiếp trong database
+        $debugSql = "SELECT COUNT(*) as total FROM guide_assign WHERE guide_id = ? AND status != 'cancelled'";
+        $debugResult = pdo_query_one($debugSql, $debugGuideId);
+      ?>
+        <div class="alert alert-warning alert-dismissible fade show">
+          <i class="bi bi-exclamation-triangle"></i> 
+          <strong>Debug Info:</strong><br>
+          Guide ID: <?= $debugGuideId ?><br>
+          Schedules from query: <?= $debugCount ?><br>
+          Direct DB check: <?= $debugResult['total'] ?? 0 ?> phân công<br>
+          <?php if(($debugResult['total'] ?? 0) > 0): ?>
+            <small class="text-danger">⚠️ Có phân công trong DB nhưng query không lấy được. Có thể do JOIN hoặc departure/tour không tồn tại.</small>
+          <?php endif; ?>
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       <?php endif; ?>
@@ -224,11 +257,17 @@ body {
           <?php foreach($schedules as $i => $sch): ?>
             <?php
             // Kiểm tra xem assignment có mới không (tạo trong 24h qua)
+            // Sử dụng assigned_at để xác định phân công mới
             $isNew = false;
+            $assignedTime = null;
             if (!empty($sch['assigned_at'])) {
                 $assignedTime = strtotime($sch['assigned_at']);
                 $hoursAgo = (time() - $assignedTime) / 3600;
                 $isNew = $hoursAgo <= 24;
+            } elseif (!empty($sch['id'])) {
+                // Nếu không có assigned_at, dùng id để ước tính (id lớn hơn = mới hơn)
+                // Giả sử id > 1000 là phân công mới (có thể điều chỉnh)
+                $isNew = $sch['id'] > 1000; // Điều chỉnh threshold này nếu cần
             }
             
             // Tính toán trạng thái
@@ -316,11 +355,16 @@ body {
                 </div>
                 <?php endif; ?>
 
-                <?php if(!empty($sch['assigned_at'])): ?>
+                <?php if($assignedTime): ?>
                 <div class="info-item">
                   <i class="bi bi-person-check"></i>
                   <div>
-                    <small class="text-muted">Phân công: <?= date('d/m/Y H:i', strtotime($sch['assigned_at'])) ?></small>
+                    <small class="text-muted">
+                      Phân công: <?= date('d/m/Y H:i', $assignedTime) ?>
+                      <?php if($isNew): ?>
+                        <span class="badge bg-success ms-2">Mới</span>
+                      <?php endif; ?>
+                    </small>
                   </div>
                 </div>
                 <?php endif; ?>
@@ -348,6 +392,8 @@ body {
 <script>
 // Auto-refresh mỗi 30 giây để cập nhật lịch làm việc mới
 let autoRefreshInterval = null;
+let lastAssignmentCount = <?= count($schedules ?? []) ?>;
+let lastCheckTime = Date.now();
 
 // Bật/tắt auto-refresh
 function toggleAutoRefresh() {
@@ -359,20 +405,110 @@ function toggleAutoRefresh() {
         document.getElementById('autoRefreshBtn').classList.add('btn-outline-secondary');
     } else {
         autoRefreshInterval = setInterval(() => {
-            location.reload();
-        }, 30000); // Refresh mỗi 30 giây
+            checkNewAssignments();
+        }, 30000); // Kiểm tra mỗi 30 giây
         document.getElementById('autoRefreshBtn').innerHTML = '<i class="bi bi-play-circle"></i> Tắt tự động làm mới';
         document.getElementById('autoRefreshBtn').classList.remove('btn-outline-secondary');
         document.getElementById('autoRefreshBtn').classList.add('btn-success');
     }
 }
 
-// Thông báo khi có assignment mới
+// Kiểm tra phân công mới bằng AJAX
+function checkNewAssignments() {
+    // Cập nhật thời gian kiểm tra
+    const lastUpdateEl = document.getElementById('lastUpdateTime');
+    if (lastUpdateEl) {
+        const now = new Date();
+        lastUpdateEl.innerHTML = '<i class="bi bi-clock"></i> Đang kiểm tra... ' + now.toLocaleTimeString('vi-VN');
+    }
+    
+    fetch('index.php?act=hdv_schedule_list&ajax_check=1&last_check=' + lastCheckTime)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const currentCount = data.count || 0;
+                const newCount = currentCount - lastAssignmentCount;
+                
+                // Cập nhật thời gian
+                if (lastUpdateEl) {
+                    const now = new Date();
+                    lastUpdateEl.innerHTML = '<i class="bi bi-clock"></i> Cập nhật: ' + now.toLocaleTimeString('vi-VN');
+                }
+                
+                if (newCount > 0) {
+                    // Có phân công mới, hiển thị thông báo và refresh
+                    showNewAssignmentNotification(newCount);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000); // Refresh sau 2 giây để người dùng thấy thông báo
+                } else {
+                    // Không có phân công mới, chỉ cập nhật số đếm
+                    lastAssignmentCount = currentCount;
+                    lastCheckTime = Date.now();
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi kiểm tra phân công mới:', error);
+            // Nếu AJAX fail, reload trang để đảm bảo có dữ liệu mới nhất
+            location.reload();
+        });
+}
+
+// Hiển thị thông báo phân công mới
+function showNewAssignmentNotification(count) {
+    // Tạo toast notification
+    const toast = document.createElement('div');
+    toast.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
+    toast.style.zIndex = '9999';
+    toast.style.minWidth = '300px';
+    toast.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+    toast.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bi bi-bell-fill fs-4 me-2"></i>
+            <div>
+                <strong>Phân công mới!</strong><br>
+                Bạn có <strong>${count}</strong> phân công mới được cập nhật!
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    // Phát âm thanh thông báo (nếu trình duyệt cho phép)
+    try {
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGW57+OcTQ8MT6Tj8LZjHAY4kdfyzHksBSR3x/DdkEAKFF606euoVRQKRp/g8r5sIQUrgc7y2Yk2CBhlue/jnE0PDE+k4/C2YxwGOJHX8sx5LAUkd8fw3ZBAC');
+        audio.volume = 0.3;
+        audio.play().catch(() => {}); // Bỏ qua lỗi nếu không phát được
+    } catch (e) {}
+    
+    // Tự động ẩn sau 5 giây
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+
+// Thông báo khi có assignment mới khi load trang
 document.addEventListener('DOMContentLoaded', function() {
     const newAssignments = document.querySelectorAll('.new-assignment');
     if (newAssignments.length > 0) {
-        console.log('Có <?= count(array_filter($schedules ?? [], function($sch) { return !empty($sch['assigned_at']) && (time() - strtotime($sch['assigned_at'])) / 3600 <= 24; })) ?? 0 ?> phân công mới!');
+        // Hiển thị thông báo nếu có phân công mới
+        const newCount = newAssignments.length;
+        if (newCount > 0) {
+            showNewAssignmentNotification(newCount);
+        }
     }
+    
+    // Lưu số lượng assignment hiện tại
+    lastAssignmentCount = document.querySelectorAll('.schedule-card').length;
+    
+    // Log để debug
+    console.log('HDV Schedule List - Total assignments:', lastAssignmentCount);
+    console.log('HDV Schedule List - New assignments:', newAssignments.length);
+    
+    // Tự động bật auto-refresh nếu chưa bật (tùy chọn)
+    // Uncomment dòng dưới nếu muốn tự động bật
+    // toggleAutoRefresh();
 });
 </script>
 </body>

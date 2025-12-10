@@ -108,6 +108,13 @@ class AdminBookingController {
             });
         }
         
+        // BUSINESS RULE: Bắt buộc chọn Lịch khởi hành
+        if (empty($data['departure_id'])) {
+            $_SESSION['error'] = 'Vui lòng chọn Lịch khởi hành trước khi tạo booking!';
+            header("Location: index.php?act=booking-create");
+            exit;
+        }
+        
         // Validate dữ liệu cơ bản
         if (empty($data['tour_id'])) {
             $_SESSION['error'] = 'Vui lòng chọn tour';
