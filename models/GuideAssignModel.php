@@ -164,10 +164,15 @@ class GuideAssignModel {
         
         $whereClause = implode(' AND ', $where);
         
+        // Debug: Log để kiểm tra
+        error_log("GuideAssignModel::getByGuideWithFilters - Guide ID: $guide_id");
+        error_log("GuideAssignModel::getByGuideWithFilters - Filters: " . json_encode($filters));
+        error_log("GuideAssignModel::getByGuideWithFilters - Where clause: $whereClause");
+        error_log("GuideAssignModel::getByGuideWithFilters - Params: " . json_encode($params));
+        
         // Query đảm bảo lấy TẤT CẢ phân công của guide (trừ cancelled)
         // Sử dụng INNER JOIN để đảm bảo chỉ lấy phân công có departure và tour hợp lệ
-        // ORDER BY assigned_at DESC để phân công mới nhất hiển thị trước
-        // Nếu assigned_at NULL thì dùng created_at hoặc id DESC để đảm bảo phân công mới luôn hiển thị
+        // ORDER BY assigned_at DESC, id DESC để phân công mới nhất hiển thị trước
         // Đảm bảo tour_code và title không giống nhau - nếu tour_code null hoặc giống title thì dùng tour_id làm mã
         $sql = "SELECT 
                     ga.*,
@@ -197,14 +202,47 @@ class GuideAssignModel {
                     ga.assigned_at,
                     ga.assigned_by
                 FROM guide_assign ga
-                INNER JOIN departures d ON ga.departure_id = d.id
-                INNER JOIN tours t ON d.tour_id = t.id
+                LEFT JOIN departures d ON ga.departure_id = d.id
+                LEFT JOIN tours t ON d.tour_id = t.id
                 WHERE $whereClause
                 ORDER BY 
-                    COALESCE(ga.assigned_at, '1970-01-01 00:00:00') DESC,
+                    ga.assigned_at DESC,
                     ga.id DESC";
         
+        error_log("GuideAssignModel::getByGuideWithFilters - SQL: " . $sql);
+        
         $result = pdo_query($sql, ...$params);
+        
+        // Debug: Log để kiểm tra
+        error_log("GuideAssignModel::getByGuideWithFilters - Result count: " . count($result));
+        if (!empty($result)) {
+            error_log("GuideAssignModel::getByGuideWithFilters - First assignment ID: " . ($result[0]['id'] ?? 'N/A'));
+            error_log("GuideAssignModel::getByGuideWithFilters - First assignment guide_id: " . ($result[0]['guide_id'] ?? 'N/A'));
+            error_log("GuideAssignModel::getByGuideWithFilters - First assignment assigned_at: " . ($result[0]['assigned_at'] ?? 'NULL'));
+            error_log("GuideAssignModel::getByGuideWithFilters - First assignment departure_id: " . ($result[0]['departure_id'] ?? 'N/A'));
+        } else {
+            // Kiểm tra trực tiếp trong database
+            $checkSql = "SELECT * FROM guide_assign WHERE guide_id = ? AND status != 'cancelled' LIMIT 1";
+            $checkResult = pdo_query($checkSql, $guide_id);
+            error_log("GuideAssignModel::getByGuideWithFilters - Direct check (no JOIN): " . json_encode($checkResult));
+            
+            // Nếu có phân công nhưng query không lấy được, có thể do departure/tour không tồn tại
+            if (!empty($checkResult)) {
+                $assignment = $checkResult[0];
+                $depId = $assignment['departure_id'] ?? 0;
+                $tourId = $assignment['tour_id'] ?? 0;
+                
+                // Kiểm tra departure có tồn tại không
+                $depCheck = pdo_query_one("SELECT id FROM departures WHERE id = ?", $depId);
+                error_log("GuideAssignModel::getByGuideWithFilters - Departure check (ID: $depId): " . json_encode($depCheck));
+                
+                // Kiểm tra tour có tồn tại không
+                if ($depCheck) {
+                    $tourCheck = pdo_query_one("SELECT id FROM tours WHERE id = ?", $tourId);
+                    error_log("GuideAssignModel::getByGuideWithFilters - Tour check (ID: $tourId): " . json_encode($tourCheck));
+                }
+            }
+        }
         
         // Đảm bảo tour_code luôn có giá trị và không giống tour_name
         foreach ($result as &$row) {

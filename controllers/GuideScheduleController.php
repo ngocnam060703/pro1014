@@ -29,8 +29,61 @@ class GuideScheduleController {
         if (session_status() == PHP_SESSION_NONE) session_start();
         
         $guideId = $_SESSION['guide']['id'] ?? 0;
+        
+        // Debug: Log để kiểm tra
+        error_log("GuideScheduleController::scheduleList - Session guide: " . json_encode($_SESSION['guide'] ?? []));
+        error_log("GuideScheduleController::scheduleList - Guide ID: " . $guideId);
+        
         if (!$guideId) {
+            error_log("GuideScheduleController::scheduleList - No guide ID found, redirecting to login");
             header("Location: index.php?act=hdv_login");
+            exit;
+        }
+        
+        // Kiểm tra AJAX request để trả về JSON (cho auto-refresh)
+        if (!empty($_GET['ajax_check'])) {
+            header('Content-Type: application/json');
+            
+            // Lấy filters
+            $filters = [];
+            if (!empty($_GET['month'])) {
+                $filters['month'] = $_GET['month'];
+            }
+            if (!empty($_GET['date'])) {
+                $filters['date'] = $_GET['date'];
+            }
+            if (!empty($_GET['status'])) {
+                $filters['status'] = $_GET['status'];
+            }
+            if (!empty($_GET['search'])) {
+                $filters['search'] = $_GET['search'];
+            }
+            
+            // Lấy danh sách lịch trình
+            $schedules = $this->assignModel->getByGuideWithFilters($guideId, $filters);
+            
+            // Kiểm tra phân công mới (tạo sau last_check)
+            $newAssignments = [];
+            if (!empty($_GET['last_check'])) {
+                $lastCheck = (int)$_GET['last_check'];
+                $lastCheckTime = date('Y-m-d H:i:s', $lastCheck / 1000);
+                
+                foreach ($schedules as $schedule) {
+                    if (!empty($schedule['assigned_at'])) {
+                        $assignedTime = strtotime($schedule['assigned_at']);
+                        if ($assignedTime > ($lastCheck / 1000)) {
+                            $newAssignments[] = $schedule;
+                        }
+                    }
+                }
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'count' => count($schedules),
+                'new_count' => count($newAssignments),
+                'new_assignments' => $newAssignments
+            ]);
             exit;
         }
         
@@ -50,7 +103,31 @@ class GuideScheduleController {
         }
         
         // Lấy danh sách lịch trình từ GuideAssignModel (đồng bộ với admin)
+        // Đảm bảo luôn lấy phân công mới nhất bằng cách sắp xếp theo assigned_at DESC
         $schedules = $this->assignModel->getByGuideWithFilters($guideId, $filters);
+        
+        // Debug: Kiểm tra trực tiếp trong database
+        $debugSql = "SELECT COUNT(*) as count, MAX(assigned_at) as latest_assigned 
+                     FROM guide_assign 
+                     WHERE guide_id = ? AND status != 'cancelled'";
+        $debugResult = pdo_query_one($debugSql, $guideId);
+        error_log("GuideScheduleController::scheduleList - Debug query result: " . json_encode($debugResult));
+        
+        // Debug: Log để kiểm tra
+        error_log("GuideScheduleController::scheduleList - Guide ID: $guideId");
+        error_log("GuideScheduleController::scheduleList - Schedules count: " . count($schedules));
+        if (empty($schedules)) {
+            error_log("GuideScheduleController::scheduleList - No schedules found for guide ID: $guideId");
+            
+            // Kiểm tra xem có phân công nào trong database không
+            $allAssignments = pdo_query("SELECT * FROM guide_assign WHERE guide_id = ? ORDER BY id DESC LIMIT 5", $guideId);
+            error_log("GuideScheduleController::scheduleList - Direct query result: " . json_encode($allAssignments));
+        } else {
+            error_log("GuideScheduleController::scheduleList - Found " . count($schedules) . " schedules");
+            if (!empty($schedules[0])) {
+                error_log("GuideScheduleController::scheduleList - First schedule: " . json_encode($schedules[0]));
+            }
+        }
         
         include "views/hdv/schedule_list.php";
     }

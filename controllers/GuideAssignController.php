@@ -228,7 +228,19 @@ class GuideAssignController {
             exit();
         }
         
-        $guide_id = $_POST["guide_id"];
+        // Lấy guide_id từ POST (có thể từ select hoặc hidden field)
+        $guide_id = $_POST["guide_id"] ?? null;
+        
+        // Debug: Log để kiểm tra
+        error_log("GuideAssignController::store - POST data: " . json_encode($_POST));
+        error_log("GuideAssignController::store - Guide ID from POST: " . ($guide_id ?? 'NULL'));
+        
+        if (empty($guide_id)) {
+            $_SESSION['error'] = "Vui lòng chọn Hướng dẫn viên!";
+            header("Location: index.php?act=guide-assign-create");
+            exit();
+        }
+        
         $departure_id = $_POST["departure_id"];
         $note = $_POST["note"] ?? '';
         $reason = $_POST["reason"] ?? '';
@@ -310,7 +322,18 @@ class GuideAssignController {
             ]);
         }
         
-        $_SESSION['message'] = "Phân công hướng dẫn viên thành công!";
+        // Debug: Log để kiểm tra
+        error_log("GuideAssignController::store - Assignment created successfully");
+        error_log("GuideAssignController::store - Assignment ID: $assignmentId");
+        error_log("GuideAssignController::store - Guide ID: $guide_id");
+        error_log("GuideAssignController::store - Departure ID: $departure_id");
+        error_log("GuideAssignController::store - Assigned at: " . $data['assigned_at']);
+        
+        // Kiểm tra lại phân công vừa tạo
+        $verifyAssignment = $this->assign->find($assignmentId);
+        error_log("GuideAssignController::store - Verify assignment: " . json_encode($verifyAssignment));
+        
+        $_SESSION['message'] = "Phân công hướng dẫn viên thành công! (ID: $assignmentId, Guide: $guide_id)";
         header("Location: index.php?act=guide-assign");
         exit();
     }

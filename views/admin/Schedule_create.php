@@ -142,7 +142,21 @@ body {
           </a>
       </div>
 
-      <form action="index.php?act=schedule-store" method="post">
+      <?php if(isset($_SESSION['error'])): ?>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <i class="bi bi-exclamation-circle"></i> <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+      <?php endif; ?>
+
+      <?php if(isset($_SESSION['message'])): ?>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <i class="bi bi-check-circle"></i> <?= $_SESSION['message']; unset($_SESSION['message']); ?>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+      <?php endif; ?>
+
+      <form action="index.php?act=schedule-store" method="post" id="scheduleForm">
           <div class="form-section fade-in">
               <h5 class="mb-3"><i class="bi bi-info-circle"></i> Thông tin cơ bản</h5>
               
@@ -177,20 +191,42 @@ body {
                   </div>
               </div>
 
+              <div class="row">
+                  <div class="col-md-6 mb-3">
+                      <label class="form-label"><i class="bi bi-geo-alt"></i> Điểm tập trung <span class="text-danger">*</span></label>
+                      <input type="text" name="meeting_point" class="form-control" 
+                             placeholder="Ví dụ: Sân bay Nội Bài, Ga Hà Nội..." required>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                      <label class="form-label"><i class="bi bi-clock"></i> Giờ kết thúc</label>
+                      <input type="time" name="end_time" id="end_time" class="form-control">
+                      <small class="form-text text-muted">Chỉ điền nếu có giờ kết thúc cụ thể</small>
+                  </div>
+              </div>
+
               <div class="mb-3">
-                  <label class="form-label"><i class="bi bi-geo-alt"></i> Điểm tập trung <span class="text-danger">*</span></label>
-                  <input type="text" name="meeting_point" class="form-control" required>
+                  <label class="form-label"><i class="bi bi-geo-alt-fill"></i> Địa chỉ tập trung</label>
+                  <input type="text" name="meeting_address" class="form-control" 
+                         placeholder="Địa chỉ chi tiết (tùy chọn)">
+              </div>
+
+              <div class="mb-3">
+                  <label class="form-label"><i class="bi bi-info-circle"></i> Hướng dẫn tập trung</label>
+                  <textarea name="meeting_instructions" class="form-control" rows="2" 
+                            placeholder="Hướng dẫn cho khách hàng về điểm tập trung (tùy chọn)"></textarea>
               </div>
 
               <div class="mb-3">
                   <label class="form-label"><i class="bi bi-flag"></i> Trạng thái <span class="text-danger">*</span></label>
                   <select name="status" class="form-select" required>
+                      <option value="scheduled" selected>Sắp khởi hành</option>
                       <option value="open">Đang mở bán</option>
                       <option value="upcoming">Sắp khởi hành</option>
                       <option value="in_progress">Đang chạy</option>
                       <option value="completed">Đã hoàn thành</option>
                       <option value="cancelled">Đã hủy</option>
                   </select>
+                  <small class="form-text text-muted">Mặc định: Sắp khởi hành</small>
               </div>
           </div>
 
@@ -235,8 +271,8 @@ body {
           </div>
 
           <div class="mt-4 d-flex gap-2">
-              <button type="submit" class="btn btn-success btn-modern">
-                  <i class="bi bi-save"></i> Lưu
+              <button type="submit" class="btn btn-success btn-modern" id="submitBtn">
+                  <i class="bi bi-save"></i> Lưu lịch trình
               </button>
               <a href="index.php?act=schedule" class="btn btn-secondary btn-modern">
                   <i class="bi bi-arrow-left"></i> Quay lại
@@ -390,6 +426,69 @@ function validateDates() {
         document.getElementById('end_date').setAttribute('min', minDate);
     }
 }
+
+// Validate form trước khi submit
+document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+    const departureTime = document.getElementById('departure_time').value;
+    const endDate = document.getElementById('end_date').value;
+    const totalSeats = parseInt(document.getElementById('total_seats').value) || 0;
+    const tourId = document.querySelector('select[name="tour_id"]').value;
+    
+    // Kiểm tra tour đã chọn chưa
+    if (!tourId) {
+        e.preventDefault();
+        alert('Vui lòng chọn Tour trước khi tạo lịch trình!');
+        return false;
+    }
+    
+    // Kiểm tra ngày khởi hành
+    if (departureTime) {
+        const departureDate = new Date(departureTime);
+        const now = new Date();
+        if (departureDate < now) {
+            e.preventDefault();
+            alert('Vui lòng chọn ngày khởi hành trong tương lai!');
+            return false;
+        }
+    }
+    
+    // Kiểm tra ngày kết thúc
+    if (endDate && departureTime) {
+        const departureDate = new Date(departureTime);
+        const endDateObj = new Date(endDate);
+        departureDate.setHours(0, 0, 0, 0);
+        endDateObj.setHours(0, 0, 0, 0);
+        if (endDateObj < departureDate) {
+            e.preventDefault();
+            alert('Ngày kết thúc phải >= ngày khởi hành!');
+            return false;
+        }
+    }
+    
+    // Kiểm tra số chỗ
+    if (totalSeats < 7 || totalSeats > 50) {
+        e.preventDefault();
+        alert('Tổng số chỗ phải từ 7 đến 50 chỗ!');
+        return false;
+    }
+    
+    // Disable submit button để tránh double submit
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Đang xử lý...';
+    
+    return true;
+});
+
+// Khởi tạo giá trị mặc định
+document.addEventListener('DOMContentLoaded', function() {
+    // Set min date cho end_date
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('end_date').setAttribute('min', today);
+    
+    // Tính seats_available ban đầu
+    calculateSeatsAvailable();
+});
 </script>
 </body>
 </html>
